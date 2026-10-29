@@ -11,7 +11,7 @@ usage: cmp_func.py <original .s> <generated .asm> <symbol> [functions.txt]
 """
 import os
 import re
-import glob
+
 import struct
 import sys
 

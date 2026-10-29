@@ -102,8 +102,6 @@ def apply(header, struct, fields, reals, write):
             if real is None:
                 continue
             # find the declaration inside `owner`'s block
-            bm = re.search(r'typedef\s+struct\s+(?:_\w+\s*)?\{(.*?)\}\s*\w+\s*;',
-                           text, re.S)
             blocks = list(re.finditer(
                 r'typedef\s+struct\s+(?:_(\w+)\s*)?\{(.*?)\}\s*(\w+)\s*;',
                 text, re.S))

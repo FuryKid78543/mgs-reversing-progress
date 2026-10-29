@@ -13,7 +13,6 @@ usage: fix_all_structs.py [-w] [name-filter]
 import glob
 import os
 import re
-import subprocess
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -77,7 +76,7 @@ def main():
     flt = [a for a in sys.argv[1:] if not a.startswith('-')]
     leftovers = fo.strip_probes()
     if leftovers:
-        print(f'cleaned up probe blocks left by an interrupted run: '
+        print('cleaned up probe blocks left by an interrupted run: '
               + ', '.join(leftovers))
     total_bad = 0
     for path in headers_with_work():

@@ -28,9 +28,8 @@ from collections import defaultdict
 from capstone import Cs, CS_ARCH_MIPS, CS_MODE_MIPS32
 
 ROOT = os.environ.get('MGS_ROOT') or os.path.join(
-OBJ_DIR = os.environ.get('MGS_OBJ_DIR', 'obj')
-
     os.path.dirname(os.path.abspath(__file__)), 'mgs_rev2')
+OBJ_DIR = os.environ.get('MGS_OBJ_DIR', 'obj')
 MD = Cs(CS_ARCH_MIPS, CS_MODE_MIPS32)
 MD.detail = True
 

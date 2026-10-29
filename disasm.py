@@ -3,7 +3,6 @@
 
 usage: disasm.py <dump.s> [dump.s ...]
 """
-import os
 import re
 import struct
 import sys

@@ -58,7 +58,6 @@ def main():
     syms = symbols_in_obj()
     tab = M.load_symtab()
     M.resolve_hexnames(tab)
-    arities = M.build_arities()
     bad = []
     checked = 0
     for name, obj in sorted(syms.items()):

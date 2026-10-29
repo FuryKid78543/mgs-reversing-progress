@@ -86,8 +86,6 @@ def main():
         max_insns = int(args[args.index('--max-insns') + 1])
 
     funcs = load_functions_txt()
-    known = overlay_symbols()
-
     # overlay dumps that are still present, by address, so a jal into another
     # unresolved dump counts as resolved-by-address.
     dump_by_addr = {}
