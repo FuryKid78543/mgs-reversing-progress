@@ -11,7 +11,6 @@ import os
 import re
 import subprocess
 import sys
-import tempfile
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.join(ROOT, 'mgs_rev2')

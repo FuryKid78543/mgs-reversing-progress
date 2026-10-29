@@ -53,7 +53,7 @@ def fragment(prog):
 def score(path):
     try:
         orig, base = M.parse_dump(path)
-    except Exception as e:
+    except Exception:
         return None
     prog = M.resolve_targets(M.expand(orig), {}, base)
     n = len(prog)
