@@ -1,0 +1,18 @@
+# PSYQ SDK
+psyq_sdk/
+wibo/
+
+# Build artifacts
+mgs_rev2/obj/
+mgs_rev2/build/*.asm
+mgs_rev2/build/*.o
+*.pyc
+__pycache__/
+
+# Symlinks to dumps (keep the originals in mgs_rev2/asm/)
+orig_*.s
+
+# OS
+.DS_Store
+mgs_reversing/
+extracted/
