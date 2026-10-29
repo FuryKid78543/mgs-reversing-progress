@@ -52,6 +52,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.environ.get('MGS_ROOT') or os.path.join(HERE, 'mgs_rev2')
 SYMTAB = os.path.join(HERE, 'symtab.json')
 ARITY = os.path.join(HERE, 'arity.json')
+_HEXNAME_CACHE = None
 
 ABI = ['zero', 'at', 'v0', 'v1', 'a0', 'a1', 'a2', 'a3',
        't0', 't1', 't2', 't3', 't4', 't5', 't6', 't7',
@@ -368,11 +369,34 @@ def resolve_targets(prog, labels, base):
 
 
 class Mem:
-    def __init__(self):
+    def __init__(self, seed=None):
         self.w = {}
+        self.seed = seed
+
+    def _default(self, a):
+        """Return the deterministic initial value for a seeded memory word."""
+        if self.seed is None:
+            return 0
+        a &= ~3
+        in_work = WORK_BASE <= a < WORK_BASE + WORK_BYTES
+        in_globals = GLOBALS_BASE <= a < GLOBALS_BASE + GLOBALS_BYTES
+        in_stack = STACK_TOP <= a < STACK_TOP + 0x400
+        if not (in_work or in_globals or in_stack):
+            return 0
+        x = (self.seed ^ (a * 0x9E3779B1)) & 0xFFFFFFFF
+        x ^= x >> 16
+        x = (x * 0x85EBCA6B) & 0xFFFFFFFF
+        x ^= x >> 13
+        pick = x & 7
+        if in_work and pick == 0:
+            return WORK_BASE + ((x >> 3) % (WORK_BYTES // 4)) * 4
+        if pick == 1:
+            return (((x >> 3) % 9) - 4) & 0xFFFFFFFF
+        return x
 
     def lw(self, a):
-        return self.w.get(a & ~3, 0)
+        a &= ~3
+        return self.w.get(a, self._default(a))
 
     def lh(self, a):
         v = self.lw(a)
@@ -430,7 +454,7 @@ class Mem:
         self.w[b] = (old & keep) | (v & ~keep & 0xFFFFFFFF)
 
     def snapshot(self):
-        return dict(self.w)
+        return {a: v for a, v in self.w.items() if v != self._default(a)}
 
 
 # ------------------------------------------------------------ execution
@@ -733,20 +757,24 @@ def save_symtab(tab):
 
 def resolve_hexnames(tab, extra=()):
     """Fill in every `<prefix>_<8 hex digits>` name from the name itself."""
-    import glob as _glob
+    global _HEXNAME_CACHE
+    if _HEXNAME_CACHE is None:
+        import glob as _glob
+        pat = re.compile(r'INCLUDE_ASM\("asm/[^"]*?/([A-Za-z_][\w]*)_'
+                         r'([0-9A-Fa-f]{8})\.s"\)')
+        _HEXNAME_CACHE = {}
+        for p in _glob.glob(os.path.join(ROOT, 'source', '**', '*.c'),
+                            recursive=True):
+            for name, hexpart in pat.findall(open(p, errors='ignore').read()):
+                _HEXNAME_CACHE[f'{name}_{hexpart}'] = \
+                    0x80000000 | int(hexpart, 16)
     added = 0
-    pat = re.compile(r'INCLUDE_ASM\("asm/[^"]*?/([A-Za-z_][\w]*)_'
-                     r'([0-9A-Fa-f]{8})\.s"\)')
-    for p in _glob.glob(os.path.join(ROOT, 'source', '**', '*.c'),
-                        recursive=True):
-        for name, hexpart in pat.findall(open(p, errors='ignore').read()):
-            key = f'{name}_{hexpart}'
-            addr = 0x80000000 | int(hexpart, 16)
-            if key not in tab:
-                tab[key] = addr
-                added += 1
-            elif tab[key] != addr:
-                raise SystemExit(f'{key}: cached {tab[key]:#x}, name says {addr:#x}')
+    for key, addr in _HEXNAME_CACHE.items():
+        if key not in tab:
+            tab[key] = addr
+            added += 1
+        elif tab[key] != addr:
+            raise SystemExit(f'{key}: cached {tab[key]:#x}, name says {addr:#x}')
     return added
 
 
@@ -816,21 +844,7 @@ def make_stub(seed):
 
 
 def make_memory(seed):
-    mem, rnd = Mem(), random.Random(seed)
-    for off in range(0, WORK_BYTES, 4):
-        pick = rnd.randrange(8)
-        if pick == 0:
-            v = WORK_BASE + rnd.randrange(WORK_BYTES // 4) * 4
-        elif pick == 1:
-            v = rnd.randrange(-4, 5) & 0xFFFFFFFF
-        else:
-            v = rnd.randrange(0, 1 << 32)
-        mem.w[WORK_BASE + off] = v
-    for off in range(0, GLOBALS_BYTES, 4):
-        mem.w[GLOBALS_BASE + off] = rnd.randrange(0, 1 << 32)
-    for i in range(0, 0x400, 4):
-        mem.w[STACK_TOP + i] = rnd.randrange(0, 1 << 32)
-    return mem
+    return Mem(seed)
 
 
 def make_args(seed):
