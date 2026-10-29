@@ -1718,3 +1718,65 @@ Ho provato `s07b_800C96B8` (32 istruzioni, 6 rami) e
 `DIFF=2  MATCH=41  NOPDIFF=6  TODO=698`. Invariato.
 
 Mi fermo qui: sono le 11:30 CET del 27/10.
+
+---
+
+## 27/10, 13:00 CET — s07b_800C47D4 non MATCH, scheduling diverso
+
+Ho provato `s07b_800C47D4` (32 istruzioni, 4 rami). La logica era giusta
+ma cc1psx schedula le operazioni in modo diverso (store di `0x800AB3CC`
+prima del confronto invece che dopo, registri diversi). Revertito.
+
+### Stato
+
+`DIFF=2  MATCH=41  NOPDIFF=6  TODO=698`. Invariato.
+
+Mi fermo qui: sono le 13:00 CET del 27/10.
+
+---
+
+## 27/10, 14:00 CET — esaurite le candidate senza movstr e senza callee ignoti
+
+Ho provato `s08b_bunsin2_800CE180`, `s08b_bunsin2_800CE2E8`,
+`s08b_bunsin2_800CE0A4`, `s08b_bunsin2_800CD614`, `s08b_bunsin2_800CE8A0`,
+`s08b_bunsin2_800CF150`, `s14e_800CA49C`, `s14e_800CCF84`,
+`s07b_800C4FB8`, `s14e_800CA2E4`. Tutte bloccate da almeno uno di:
+- `lwl/lwr/swl/swr` (movstr, non riproducibile da C standard)
+- callee ignoto nel main exe (0x80092DD8, 0x80093798, 0x8001706C, ecc.)
+- allocazione registri diversa
+
+### Stato
+
+`DIFF=2  MATCH=41  NOPDIFF=6  TODO=698`. Invariato.
+
+Le candidate pronte rimaste (s07b_800C47D4, s07b_800C96B8, s14e_800C82D0,
+s14e_800C6208, s15c_dyncon_800D88C8, s14e_800CA538, brf_800DDC40,
+brf_800DA4E8, brf_800DCB44, rank_800D2644, s11d_hind_800CAFEC) sono
+tutte state provate e non matchano.
+
+Mi fermo qui: sono le 14:00 CET del 27/10.
+
+---
+
+## 29/10, 10:00 CET — rank_800CC19C MATCH, fix cmp_func lui+lw
+
+### `cmp_func.py`: fold anche `lui`+`lw`
+
+Il compilatore Konami usava `lui 0x800b; lw -0x4d14` (GAS convention,
+%hi arrotonda), cc1psx usa `lui 0x800a; lw 0xb2ec` (split plain). Entrambi
+producono 0x800AB2EC ma il fold precedente applicava sign-extension a
+entrambi, dando risultati diversi. Rimosso il sign-extension: `(hi << 16) + lo`
+funziona per entrambi grazie al carry.
+
+### `rank_800CC19C` (17 istruzioni) → MATCH + EQUIV
+
+Usa `0x800AB2EC` (int globale del main exe) e `0x8008E768` (funzione del
+main exe). Entrambi dichiarati come `extern` con nomi sintetici
+(`data_800AB2EC`, `func_8008E768`) e aggiunti a `symtab.json` e
+`functions.txt`.
+
+### Stato
+
+`DIFF=2  MATCH=42  NOPDIFF=6  TODO=697`. Un commit nuovo (`fcf3213`).
+
+Mi fermo qui: sono le 10:00 CET del 29/10.

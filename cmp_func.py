@@ -290,6 +290,39 @@ def fold_lui_pairs(seq):
     return out
 
 
+LUI_LW = re.compile(r'^lui (\S+), (\d+)$')
+LW_BASE = re.compile(r'^lw (\S+), (-?\d+)\((\S+)\)$')
+
+
+def fold_lui_lw_pairs(seq):
+    """Collapse `lui r,H` + `lw rt,X(r)` into `lw rt,addr`.
+
+    The same global address has several legal splits: 0x800AB2EC is
+    `lui $2,0x800b` + `lw $5,-0x4d14($2)` in the original dump and
+    `lui $2,0x800a` + `lw $5,0xb2ec($2)` in cc1psx output. Only adjacent
+    pairs are folded.
+    """
+    out, i = [], 0
+    while i < len(seq):
+        m1 = LUI_LW.match(seq[i])
+        if m1 and i + 1 < len(seq):
+            m2 = LW_BASE.match(seq[i + 1])
+            if m2 and m2.group(3) == m1.group(1):
+                hi = int(m1.group(2))
+                lo = int(m2.group(2))
+                # No sign extension: canon_reloc already converted %lo to unsigned,
+                # and the original's signed immediate is preserved as-is.
+                # (hi << 16) + lo works for both signed (original) and unsigned
+                # (generated) because of the carry from the high half.
+                addr = (hi << 16) + lo
+                out.append(f'lw {m2.group(1)}, {addr}')
+                i += 2
+                continue
+        out.append(seq[i])
+        i += 1
+    return out
+
+
 def load_symtab(path):
     if not path or not os.path.exists(path):
         return {}
@@ -308,8 +341,8 @@ def main():
     orig_path, gen_path, symbol = sys.argv[1], sys.argv[2], sys.argv[3]
     symtab = load_symtab(sys.argv[4]) if len(sys.argv) > 4 else {}
 
-    a = fold_lui_pairs(load_original(orig_path, symtab))
-    b = fold_lui_pairs(load_generated(gen_path, symbol, symtab))
+    a = fold_lui_lw_pairs(fold_lui_pairs(load_original(orig_path, symtab)))
+    b = fold_lui_lw_pairs(fold_lui_pairs(load_generated(gen_path, symbol, symtab)))
 
     n = max(len(a), len(b))
     print(f'original : {len(a)} instructions')
