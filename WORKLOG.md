@@ -2008,3 +2008,29 @@ Il resto della funzione e' il solito trio:
 `DIFF=2  MATCH=49  NOPDIFF=10  TODO=686`. 49/747 = 6.6%.
 
 Mi fermo qui: sono le 15:00 CET del 13/11.
+
+---
+
+## 13/11, 15:30 CET — s14e_800CCF84 installata come DIFF
+
+`s14e_800CCF84` (think di zako14) e' completa e semanticamente corretta.
+Restano due sole istruzioni fuori posto:
+
+    lw a0, 156(s1)  |  move a1, s0
+    move a1, s0     |  lw a0, 156(s1)
+
+Sono due istruzioni indipendenti: il load di `body.objs` e la preparazione di
+`&control.mov` per `GM_SeSet`. cc1psx le emette nell'ordine opposto a quello
+Konami; ho provato a forzare l'ordine con locali, cast e pointer arithmetic,
+ma cambia solo l'allocazione dei registri (peggiora). La logica e' verificata:
+`count3 == 0` -> mark + suono + HZD probe; poi `count3 < 0x14` -> press |= 0x20
+e incremento, altrimenti ritorna 1.
+
+La installo come DIFF: il binario differisce di due sole istruzioni, il
+comportamento no. `800CCCC4` resta INCLUDE_ASM.
+
+### Stato
+
+`DIFF=3  MATCH=49  NOPDIFF=10  TODO=685`. 49/747 = 6.6%.
+
+Mi fermo qui: sono le 15:30 CET del 13/11.
