@@ -2099,3 +2099,21 @@ due `nop` dopo `mfhi` che l'originale non ha.
 `DIFF=3  MATCH=50  NOPDIFF=12  TODO=682`. 50/747 = 6.7%.
 
 Mi fermo qui: sono le 17:00 CET del 13/11.
+
+---
+
+## 13/11, 17:30 CET — due effetti s08b in piu'
+
+- `s08b_bunsin2_800CD544` — `NewSpark(&m, 0)` sul `DG_OBJ[idx]`, dopo
+  `DG_SetPos` + `DG_MovePos`/`DG_RotatePos` e `ReadRotMatrix`. NOPDIFF: un
+  `nop` prima di `jr ra`.
+- `s08b_bunsin2_800CD5AC` — gemella con `NewBlood(&m, 0)`. Stesso NOPDIFF.
+
+Entrambe hanno il solito pattern `&work->body.objs->objs[idx]` e le costanti
+`SVECTOR` in `overlay2.c`.
+
+### Stato
+
+`DIFF=3  MATCH=50  NOPDIFF=14  TODO=680`. 50/747 = 6.7%.
+
+Mi fermo qui: sono le 17:30 CET del 13/11.
