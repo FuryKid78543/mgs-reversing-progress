@@ -2378,3 +2378,20 @@ Mi fermo qui: sono le 23:59 CET del 13/11.
 Totale C: 95/747 = 12.7%.
 
 Mi fermo qui: sono le 23:59 CET del 13/11.
+
+---
+
+## 13/11, 23:59 CET — s14e_800CAD24 DIFF
+
+`work->pad.field_10 & 0x10` (0xBA3), `work->think2 != 5`, poi
+`s14e_800CC084(hzd)` e `s14e_800CBD74(hzd, &mov, facedir, range, length)`;
+se entrambi passano, `work->pad.field_10 |= 0x10` (0xBA2). cc1psx usa meno
+registri salvati (rematerializza gli offset) e riduce da 43 a 34 istruzioni.
+DIFF.
+
+### Stato
+
+`DIFF=22  MATCH=52  NOPDIFF=23  TODO=650`.
+Totale C: 97/747 = 13.0%.
+
+Mi fermo qui: sono le 23:59 CET del 13/11.
