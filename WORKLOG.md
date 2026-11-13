@@ -2242,3 +2242,19 @@ Il trucco: tenere `v` come `int`, non `short`, altrimenti cc1psx inserisce
 `DIFF=4  MATCH=52  NOPDIFF=21  TODO=670`. 52/747 = 7.0%.
 
 Mi fermo qui: sono le 21:00 CET del 13/11.
+
+---
+
+## 13/11, 21:30 CET — s14e_800CA998 NOPDIFF
+
+Logica dei bit di allerta: se il byte a 0xBA3 ha il bit 2, guarda il campo a
++6 del target; se ha i bit 1-2 impostati mette 4 nel byte 0xBA2. Altrimenti,
+se il campo a 0x952 ha il bit 0x80 e `data_800ABA50 & 0x1010 != 0x1000`,
+imposta 0xC. L'originale ha quattro `nop` di load-delay e un delay slot vuoto
+sulla `jr`: NOPDIFF.
+
+### Stato
+
+`DIFF=4  MATCH=52  NOPDIFF=22  TODO=669`. 52/747 = 7.0%.
+
+Mi fermo qui: sono le 21:30 CET del 13/11.
