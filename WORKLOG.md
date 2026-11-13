@@ -2395,3 +2395,18 @@ DIFF.
 Totale C: 97/747 = 13.0%.
 
 Mi fermo qui: sono le 23:59 CET del 13/11.
+
+---
+
+## 13/11, 23:59 CET — s14e_800C6F40 NOPDIFF
+
+`GV_DiffDirS` tra a0 e a1, con soglia 0x380/0x701 e ritorno 0/1/2.
+L'originale ha due `nop` di delay slot (uno sulla `jal`, uno prima di `jr ra`).
+NOPDIFF.
+
+### Stato
+
+`DIFF=22  MATCH=52  NOPDIFF=24  TODO=649`. 52/747 = 7.0%.
+Totale C: 99/747 = 13.2%.
+
+Mi fermo qui: sono le 23:59 CET del 13/11.
