@@ -8,9 +8,9 @@ Goal: decompile the remaining overlay functions from `FoxdieTeam/mgs_reversing` 
 | Metric | Count | Description |
 |---|---|---|
 | **MATCH** | **48** | Decompiled and verified exact with `cc1psx` (instruction-level) |
-| NOPDIFF | 8 | Decompiled, but original had `nop` in delay slots (MATCH impossible) |
+| NOPDIFF | 10 | Decompiled, but original had `nop` in delay slots (MATCH impossible) |
 | DIFF | 2 | `s11g_11g_demo_800CB878` (not equivalent) + `s14e_800C6ADC` (NOP in delay slot) |
-| TODO | 689 | Still in assembly (`INCLUDE_ASM`) |
+| TODO | 687 | Still in assembly (`INCLUDE_ASM`) |
 | **Total** | **747** | Functions in the dump |
 
 Progress: **48/747 (6.4%)** decompiled with exact MATCH.
@@ -53,6 +53,11 @@ Progress: **48/747 (6.4%)** decompiled with exact MATCH.
   register is dead afterwards (added 13/11)
 - `lui; jal; addiu` delay-slot split: folded for `jal` only, never for
   conditional branches (added 13/11)
+- `lui` + `lw` and `lui` + `addiu`/`ori` separated by up to four independent
+  instructions: folded with a base-register liveness check (added 13/11)
+- Calls to overlay-local symbols named `<overlay>_<address>` are compared by
+  the address encoded in the name, so `functions.txt` stays main-exe-only
+  (added 13/11)
 
 ## Repository Structure
 
@@ -114,8 +119,13 @@ work/
 
 ## NOPDIFF Functions (MATCH impossible)
 
-6 functions with a single register restore → `nop` between `lw ra` and `jr ra`.  
-cc1psx always fills delay slots, so these can never be exact MATCH.
+10 functions whose original has a `nop` in a delay slot: a single register
+restore before `jr ra`, or an unfilled `jal`/`jr` slot. cc1psx fills those
+slots, so the instruction streams can never be identical, but the C is
+semantically equivalent.
+
+Examples: `s07b_800C4F50`, `s07b_800C5514`, `s14e_800C6028`,
+`s14e_800CA49C`, and the `rank_800D0A24` family.
 
 ## Work Log
 

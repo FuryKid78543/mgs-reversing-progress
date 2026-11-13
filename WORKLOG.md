@@ -1948,3 +1948,37 @@ due nuovi entrano come MATCH.
 `DIFF=2  MATCH=48  NOPDIFF=8  TODO=689`. 48/747 = 6.4%.
 
 Mi fermo qui: sono le 13:00 CET del 13/11.
+
+---
+
+## 13/11, 14:00 CET — fold non adiacenti, e due funzioni zako14
+
+`cmp_func` non si ferma piu' alla coppia adiacente:
+
+- `lui r,H` + `lw rt,X(r)` viene piegato anche con fino a quattro istruzioni
+  indipendenti in mezzo (il scheduler alza spesso il `lui` sopra un load
+  estraneo). Lo scan si ferma a branch, jump, o a qualunque uso/scrittura
+  della base; se il load non sovrascrive la base, questa deve essere morta.
+- lo stesso per `lui r,H` + `addiu/ori d,r,X`, con liveness della base quando
+  `d != r`.
+- le chiamate a simboli overlay-locali `<overlay>_<address>` vengono
+  confrontate tramite l'indirizzo nel nome: niente indirizzi overlay dentro
+  `functions.txt`, che resta valido per il main exe.
+
+Questo ha sbloccato il load globale non adiacente di `s14e_800CA49C`.
+
+### NOPDIFF
+
+- `s14e_800C6028` — cleanup di zako14: `GM_FreeControl`, `GM_FreeObject`
+  (body e weapon), `GM_FreeTarget`, `GV_DestroyActor` (glight e shadow),
+  `GM_ResetHomingTarget`. Cinque `nop` nei delay slot delle `jal`.
+- `s14e_800CA49C` — mark/alert sopra il nemico: check
+  `control.map->index & data_800ABA0C`, `GM_SeSet`, distruzione del mark
+  precedente, `s14e_800CB22C(&objs[6], arg)` e timer 0x1E. Un `nop` di
+  load-delay nell'originale.
+
+### Stato
+
+`DIFF=2  MATCH=48  NOPDIFF=10  TODO=687`. 48/747 = 6.4%.
+
+Mi fermo qui: sono le 14:00 CET del 13/11.

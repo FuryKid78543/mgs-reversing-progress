@@ -94,6 +94,15 @@ def canon_insn(mnemonic, ops):
     elif m == 'jalr' and len(o) == 2 and o[0] == 'ra':
         o = o[1:]
 
+    # Overlay-local functions are often spelled `<overlay>_<address>` (e.g.
+    # `s14e_800CB22C`) while the dump has only the numeric target. The address
+    # is authoritative and per-overlay, so resolve the name to that number
+    # instead of polluting functions.txt with overlay addresses.
+    if m in ('j', 'jal') and o:
+        sym = re.fullmatch(r'[A-Za-z_]\w*_([0-9A-Fa-f]{8})', o[-1])
+        if sym:
+            o[-1] = str(0x80000000 | int(sym.group(1), 16))
+
     # branch displacements are resolved by the assembler; compare the shape only
     if m in ('b', 'beq', 'bne', 'beqz', 'bnez', 'bgez', 'bgtz', 'blez', 'bltz',
              'beqzl', 'bnezl', 'bgezal', 'bltzal', 'jal', 'j') and o:
@@ -358,6 +367,11 @@ def fold_lui_pairs(seq):
     A pair separated by a `jal` is folded too: the `addiu` is the call's delay
     slot and therefore always executes. Conditional branches are *not* folded
     through -- there the addiu really is conditional.
+
+    The pair need not be adjacent even without a `jal`: the scheduler can hoist
+    the `lui` above unrelated loads/stores. The scan folds across up to four
+    instructions that neither read nor write the base, and stops at any branch
+    or jump.
     """
     out, i = [], 0
     while i < len(seq):
@@ -405,6 +419,33 @@ def fold_lui_pairs(seq):
                 i += 3
                 continue
 
+        # Split pair with up to four independent instructions in between.  The
+        # scheduler hoists the `lui` above unrelated loads/stores; the pair is
+        # folded only while those instructions neither read nor write the base,
+        # and the scan stops at any branch or jump.
+        j = i + 1
+        limit = min(len(seq), i + 6)
+        while j < limit:
+            hit = candidate(j - i)
+            if hit is not None:
+                out.extend(seq[i + 1:j])
+                out.append(f'li32 {hit[1]}, {hit[2]}')
+                i = j + 1
+                break
+
+            mnemonic, ops = parse_insn(seq[j])
+            if (mnemonic in BRANCHES or mnemonic in ('j', 'jal', 'jr')
+                    or writes_first(mnemonic, ops, base)
+                    or reads_reg(mnemonic, ops, base)):
+                hit = None
+                break
+            j += 1
+        else:
+            hit = None
+
+        if hit is not None and i == j + 1:
+            continue
+
         out.append(seq[i])
         i += 1
     return out
@@ -419,25 +460,66 @@ def fold_lui_lw_pairs(seq):
 
     The same global address has several legal splits: 0x800AB2EC is
     `lui $2,0x800b` + `lw $5,-0x4d14($2)` in the original dump and
-    `lui $2,0x800a` + `lw $5,0xb2ec($2)` in cc1psx output. Only adjacent
-    pairs are folded.
+    `lui $2,0x800a` + `lw $5,0xb2ec($2)` in cc1psx output.
+
+    The two instructions need not be adjacent: the scheduler may hoist the
+    `lui` above an unrelated load in the same basic block. The pair is folded
+    across up to four instructions that neither read nor write the base
+    register, and the scan stops at any branch, jump or base-register use. If
+    the load does not overwrite the base, the base must be dead afterwards.
     """
     out, i = [], 0
     while i < len(seq):
         m1 = LUI_LW.match(seq[i])
-        if m1 and i + 1 < len(seq):
-            m2 = LW_BASE.match(seq[i + 1])
-            if m2 and m2.group(3) == m1.group(1):
-                hi = int(m1.group(2))
-                lo = int(m2.group(2))
-                # No sign extension: canon_reloc already converted %lo to unsigned,
-                # and the original's signed immediate is preserved as-is.
-                # (hi << 16) + lo works for both signed (original) and unsigned
-                # (generated) because of the carry from the high half.
-                addr = (hi << 16) + lo
-                out.append(f'lw {m2.group(1)}, {addr}')
-                i += 2
-                continue
+        if m1 is None:
+            out.append(seq[i])
+            i += 1
+            continue
+
+        base = m1.group(1)
+        hi = int(m1.group(2))
+
+        def fold_at(j):
+            m2 = LW_BASE.match(seq[j])
+            if m2 is None or m2.group(3) != base:
+                return None
+            dest = m2.group(1)
+            if dest != base and not reg_dead_after(seq, j + 1, base):
+                return None
+            addr = (hi << 16) + int(m2.group(2))
+            return f'lw {dest}, {addr}'
+
+        # Adjacent pair.
+        folded = fold_at(i + 1) if i + 1 < len(seq) else None
+        if folded is not None:
+            out.append(folded)
+            i += 2
+            continue
+
+        # Split pair with up to four independent instructions in between.
+        j = i + 1
+        limit = min(len(seq), i + 6)
+        while j < limit:
+            folded = fold_at(j)
+            if folded is not None:
+                out.extend(seq[i + 1:j])
+                out.append(folded)
+                i = j + 1
+                break
+
+            mnemonic, ops = parse_insn(seq[j])
+            if (mnemonic in BRANCHES or mnemonic in ('j', 'jal', 'jr')
+                    or writes_first(mnemonic, ops, base)
+                    or reads_reg(mnemonic, ops, base)):
+                folded = None
+                break
+            j += 1
+        else:
+            folded = None
+
+        if folded is not None and i == j + 1:
+            continue
+
         out.append(seq[i])
         i += 1
     return out
