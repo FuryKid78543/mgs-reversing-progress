@@ -7,13 +7,13 @@ Goal: decompile the remaining overlay functions from `FoxdieTeam/mgs_reversing` 
 
 | Metric | Count | Description |
 |---|---|---|
-| **MATCH** | **46** | Decompiled and verified exact with `cc1psx` (instruction-level) |
+| **MATCH** | **48** | Decompiled and verified exact with `cc1psx` (instruction-level) |
 | NOPDIFF | 8 | Decompiled, but original had `nop` in delay slots (MATCH impossible) |
 | DIFF | 2 | `s11g_11g_demo_800CB878` (not equivalent) + `s14e_800C6ADC` (NOP in delay slot) |
-| TODO | 691 | Still in assembly (`INCLUDE_ASM`) |
+| TODO | 689 | Still in assembly (`INCLUDE_ASM`) |
 | **Total** | **747** | Functions in the dump |
 
-Progress: **46/747 (6.2%)** decompiled with exact MATCH.
+Progress: **48/747 (6.4%)** decompiled with exact MATCH.
 
 ## Methodology
 
@@ -49,6 +49,10 @@ Progress: **46/747 (6.2%)** decompiled with exact MATCH.
 - `li` with zero low half: fixed (`0 <= val` → `val != 0 and (val & 0xFFFF) == 0`)
 - `jal $31,reg` → `jalr`: fixed (was printed as `jal ra, L`, indistinguishable from direct calls)
 - `lui`+`ori` fold: fixed (was only folding `lui`+`addiu`)
+- `lui`+`addiu`/`ori` with a different destination register: folded when the base
+  register is dead afterwards (added 13/11)
+- `lui; jal; addiu` delay-slot split: folded for `jal` only, never for
+  conditional branches (added 13/11)
 
 ## Repository Structure
 
@@ -93,6 +97,8 @@ work/
 | `s07b_800C54C0` | s07b | 10 | Shadow enable/disable helper (`field_8C2`, `field_84C`). |
 | `s07b_800C54E8` | s07b | 11 | Undo of `800C54C0`, clears `field_8C2` and re-enables shadow bits. |
 | `s14e_800CA2E4` | s14e | 28 | Blood splash matrix on `DG_OBJ[idx]` (twin of `s07b_800C4F50`). |
+| `s08b_bunsin2_800CD614` | s08b | 31 | Muzzle flash on `DG_OBJ[4]`, `GM_SeSet` + `AN_SocomFlash`, re-arms itself. |
+| `s08b_bunsin2_800CD770` | s08b | 38 | `RotMatrix` for the floor light prim, then copies the body translation. |
 
 ## Blocked Functions (examples)
 

@@ -1917,3 +1917,34 @@ di load-delay; `s08b_bunsin2_800CD770`/`800CD614` differiscono solo per lo
 split `lui/addiu` dell'indirizzo, non per la semantica).
 
 Mi fermo qui: sono le 12:00 CET del 13/11.
+
+---
+
+## 13/11, 13:00 CET — cmp_func normalizza lui+addiu con dest diverso e il delay di jal
+
+Due candidate erano gia' decompilate e semanticamente corrette ma venivano
+bocciate solo per lo split dello stesso indirizzo:
+
+- `s08b_bunsin2_800CD770`: `lui v0,0x800a; addiu t1,v0,0xb39c` vs
+  `lui v0,0x800b; addiu t1,v0,-0x4c64` (stesso 0x800AB39C).
+- `s08b_bunsin2_800CD614`: `lui a1,0x800d; jal; addiu a1,a1,0xd614` vs
+  `lui a1,0x800c; jal; addiu a1,a1,0x...` (stesso 0x800CD614).
+
+`fold_lui_pairs` ora:
+
+1. accetta `addiu`/`ori` con destinazione diversa dalla base, ma solo se la
+   base e' morta dopo la coppia (nuovo `reg_dead_after`: traccia scritture e
+   letture in avanti, conservativo sulle istruzioni sconosciute);
+2. attraversa un `jal` per assorbire l'`addiu` nel delay slot, perche' il delay
+   slot di `jal` e' incondizionato. Solo se l'`addiu` scrive la base (la high
+   half non deve restare viva nei registri argomento durante la chiamata).
+   I branch condizionali restano esclusi: li' l'`addiu` e' davvero condizionale.
+
+Nessuna regressione: `checkall.py` resta con gli stessi MATCH/NOPDIFF/DIFF e i
+due nuovi entrano come MATCH.
+
+### Stato
+
+`DIFF=2  MATCH=48  NOPDIFF=8  TODO=689`. 48/747 = 6.4%.
+
+Mi fermo qui: sono le 13:00 CET del 13/11.

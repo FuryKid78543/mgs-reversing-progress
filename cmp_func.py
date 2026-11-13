@@ -256,35 +256,155 @@ def load_generated(path, symbol, symtab):
 
 
 LUI_CONST = re.compile(r'^lui (\S+), (\d+)$')
-ADD_SAME = re.compile(r'^(?:addiu|addu|addi) (\S+), \1, (-?\d+)$')
-ORI_SAME = re.compile(r'^ori (\S+), \1, (\d+)$')
+ADD_ANY = re.compile(r'^(?:addiu|addu|addi) (\S+), (\S+), (-?\d+)$')
+ORI_ANY = re.compile(r'^ori (\S+), (\S+), (\d+)$')
+
+# Opcodes whose first operand is written (the remaining operands may still be
+# read, e.g. `addu rd, rd, rs`). Stores are deliberately absent: their first
+# operand is a source.
+WRITES_FIRST = {
+    'addiu', 'addu', 'addi', 'andi', 'ori', 'xori', 'lui', 'li', 'li32', 'la',
+    'lw', 'lh', 'lhu', 'lb', 'lbu', 'lwl', 'lwr', 'lwc1', 'lwc2',
+    'move', 'mfhi', 'mflo', 'sll', 'srl', 'sra', 'sllv', 'srlv', 'srav',
+    'and', 'or', 'xor', 'nor', 'slt', 'sltu', 'slti', 'sltiu',
+    'subu', 'sub', 'negu', 'neg', 'not',
+}
+
+INSN = re.compile(r'^([a-z][a-z0-9.]*)\s*(.*)$')
+BRANCHES = {
+    'beq', 'bne', 'beqz', 'bnez', 'bgez', 'bgtz', 'blez', 'bltz',
+    'beqzl', 'bnezl', 'bgezal', 'bltzal',
+}
+STORES = {'sw', 'sh', 'sb', 'swl', 'swr', 'swc1', 'swc2'}
+
+
+def parse_insn(text):
+    m = INSN.match(text)
+    if m is None:
+        return None, []
+    rest = m.group(2).strip()
+    ops = [x.strip() for x in rest.split(',')] if rest else []
+    return m.group(1), ops
+
+
+def has_reg(operand, reg):
+    """True when `reg` appears as a whole register name in an operand."""
+    return re.search(r'(?<![a-z0-9])' + re.escape(reg) + r'(?![a-z0-9])',
+                     operand) is not None
+
+
+def writes_first(mnemonic, ops, reg):
+    if mnemonic in WRITES_FIRST:
+        return bool(ops) and ops[0] == reg
+    if mnemonic == 'jal':
+        return reg == 'ra'      # jal writes $31
+    return False
+
+
+def reads_reg(mnemonic, ops, reg):
+    """Conservative read test for the register-liveness check below."""
+    if mnemonic in WRITES_FIRST:
+        return any(has_reg(op, reg) for op in ops[1:])
+    if mnemonic in STORES or mnemonic in BRANCHES:
+        return any(has_reg(op, reg) for op in ops)
+    if mnemonic == 'jr':
+        return any(has_reg(op, reg) for op in ops)
+    if mnemonic == 'jal':
+        # `jal L` is a label; `jal reg` would have been folded to `jalr`.
+        return any(has_reg(op, reg) for op in ops)
+    if mnemonic in ('j', 'nop'):
+        return False
+    if mnemonic in ('mult', 'multu', 'div', 'divu'):
+        return any(has_reg(op, reg) for op in ops)
+    # Unknown instruction: assume any mention is a read. That only makes the
+    # liveness check more conservative, never less.
+    return any(has_reg(op, reg) for op in ops)
+
+
+def reg_dead_after(seq, start, reg):
+    """True when `reg` is overwritten before being read after `start`."""
+    for text in seq[start:]:
+        mnemonic, ops = parse_insn(text)
+        if mnemonic is None:
+            continue
+        if writes_first(mnemonic, ops, reg):
+            # An instruction such as `addu rd,rd,rs` both reads and writes.
+            return not reads_reg(mnemonic, ops, reg)
+        if reads_reg(mnemonic, ops, reg):
+            return False
+    return True
+
+
+def _lui_addiu_value(hi, imm):
+    return (int(hi) << 16) + int(imm)
+
+
+def _lui_ori_value(hi, imm):
+    return (int(hi) << 16) | int(imm)
 
 
 def fold_lui_pairs(seq):
-    """Collapse `lui r,H` + `addiu r,r,X` into one `li32 r,(H<<16)+X`.
+    """Collapse `lui r,H` + `addiu/ori d,r,X` into one `li32 d,(H<<16)+X`.
 
     The same 32-bit constant has several legal splits: 0x800CF938 is
     `lui $2,0x800d` + `addiu $2,$2,-0x6c8` in the original dump and
-    `lui $2,0x800c` + `addiu $2,$2,0xf938` in cc1psx output. Only adjacent pairs
-    are folded, so the `addiu` that sits in a branch delay slot stays separate -
-    there it really is a different instruction.
+    `lui $2,0x800c` + `addiu $2,$2,0xf938` in cc1psx output.
+
+    The destination need not be the source: `lui $2,0x800a` + `addiu $9,$2,0xb39c`
+    is the same address as `lui $2,0x800b` + `addiu $9,$2,-0x4c64`. When the
+    destination differs, the pair is folded only when the base register is dead
+    afterwards, so a later use of the unmodified high half cannot be hidden.
+
+    A pair separated by a `jal` is folded too: the `addiu` is the call's delay
+    slot and therefore always executes. Conditional branches are *not* folded
+    through -- there the addiu really is conditional.
     """
     out, i = [], 0
     while i < len(seq):
         m1 = LUI_CONST.match(seq[i])
-        if m1 and i + 1 < len(seq):
-            m2 = ADD_SAME.match(seq[i + 1])
-            if m2 and m2.group(1) == m1.group(1):
-                val = (int(m1.group(2)) << 16) + int(m2.group(2))
-                out.append(f'li32 {m2.group(1)}, {val}')
-                i += 2
+        if m1 is None:
+            out.append(seq[i])
+            i += 1
+            continue
+
+        base = m1.group(1)
+        hi = int(m1.group(2))
+
+        def candidate(offset):
+            """Match the addiu/ori at seq[i+offset] against this lui."""
+            if i + offset >= len(seq):
+                return None
+            m_add = ADD_ANY.match(seq[i + offset])
+            if m_add and m_add.group(2) == base:
+                dest = m_add.group(1)
+                if dest == base or reg_dead_after(seq, i + offset + 1, base):
+                    return ('addiu', dest, _lui_addiu_value(hi, m_add.group(3)))
+            m_ori = ORI_ANY.match(seq[i + offset])
+            if m_ori and m_ori.group(2) == base:
+                dest = m_ori.group(1)
+                if dest == base or reg_dead_after(seq, i + offset + 1, base):
+                    return ('ori', dest, _lui_ori_value(hi, m_ori.group(3)))
+            return None
+
+        # Adjacent pair.
+        hit = candidate(1)
+        if hit is not None:
+            out.append(f'li32 {hit[1]}, {hit[2]}')
+            i += 2
+            continue
+
+        # `lui; jal; addiu` -- the addiu is the unconditional delay slot.  Only
+        # fold when it writes the base register: otherwise the high half is
+        # still live in the callee's argument registers during the call.
+        if (i + 2 < len(seq) and seq[i + 1].startswith('jal ')
+                and not seq[i + 1].startswith('jalr')):
+            hit = candidate(2)
+            if hit is not None and hit[1] == base:
+                out.append(f'li32 {hit[1]}, {hit[2]}')
+                out.append(seq[i + 1])
+                i += 3
                 continue
-            m2 = ORI_SAME.match(seq[i + 1])
-            if m2 and m2.group(1) == m1.group(1):
-                val = (int(m1.group(2)) << 16) | int(m2.group(2))
-                out.append(f'li32 {m2.group(1)}, {val}')
-                i += 2
-                continue
+
         out.append(seq[i])
         i += 1
     return out
