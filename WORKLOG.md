@@ -2333,3 +2333,26 @@ Mi fermo qui: sono le 23:00 CET del 13/11.
 Totale C: 88/747 = 11.8%.
 
 Mi fermo qui: sono le 23:30 CET del 13/11.
+
+---
+
+## 13/11, 23:59 CET — altre quattro override zako14
+
+Famiglia `GM_ConfigObjectOverride` con reset su `pad.press` e `body.time2`:
+
+- `s14e_800C99D0` — vision.length 3000, motion2 0xB, reset su `press & 4`.
+- `s14e_800C9C7C` — motion2 0x17, reset se `time2 != 0` o `(press & 0x400) == 0`.
+- `s14e_800C9BB4` — vision.length 0, motion2 0x16, `GM_SeSet` 0x92 se
+  arg == 0x3C, reset su `press & 0x80`.
+- `s14e_800C9D20` — vision.length 0, motion2 0x13, `GM_SeSet` 0x92 se
+  arg == 0x5A, reset su `press & 0x800`.
+
+Tutte DIFF: cc1psx anticipa il load della costante `GM_ConfigObjectOverride`
+e a volte omette un `nop` di load-delay. Logica verificata.
+
+### Stato
+
+`DIFF=17  MATCH=52  NOPDIFF=23  TODO=655`.
+Totale C: 92/747 = 12.3%.
+
+Mi fermo qui: sono le 23:59 CET del 13/11.
