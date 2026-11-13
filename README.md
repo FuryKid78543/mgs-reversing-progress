@@ -8,9 +8,9 @@ Goal: decompile the remaining overlay functions from `FoxdieTeam/mgs_reversing` 
 | Metric | Count | Description |
 |---|---|---|
 | **MATCH** | **49** | Decompiled and verified exact with `cc1psx` (instruction-level) |
-| NOPDIFF | 10 | Decompiled, but original had `nop` in delay slots (MATCH impossible) |
+| NOPDIFF | 11 | Decompiled, but original had `nop` in delay slots (MATCH impossible) |
 | DIFF | 3 | `s11g_11g_demo_800CB878`, `s14e_800C6ADC`, `s14e_800CCF84` (2-instruction schedule swap) |
-| TODO | 685 | Still in assembly (`INCLUDE_ASM`) |
+| TODO | 684 | Still in assembly (`INCLUDE_ASM`) |
 | **Total** | **747** | Functions in the dump |
 
 Progress: **49/747 (6.6%)** decompiled with exact MATCH.
@@ -126,7 +126,7 @@ slots, so the instruction streams can never be identical, but the C is
 semantically equivalent.
 
 Examples: `s07b_800C4F50`, `s07b_800C5514`, `s14e_800C6028`,
-`s14e_800CA49C`, and the `rank_800D0A24` family.
+`s14e_800C6E08`, `s14e_800CA49C`, and the `rank_800D0A24` family.
 
 ## Work Log
 

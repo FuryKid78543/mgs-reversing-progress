@@ -2034,3 +2034,22 @@ comportamento no. `800CCCC4` resta INCLUDE_ASM.
 `DIFF=3  MATCH=49  NOPDIFF=10  TODO=685`. 49/747 = 6.6%.
 
 Mi fermo qui: sono le 15:30 CET del 13/11.
+
+---
+
+## 13/11, 16:00 CET — s14e_800C6E08 NOPDIFF
+
+`s14e_800C6E08` e' un attivatore di stato: chiama `s14e_800C6B18`, poi
+`s14e_800C6A34` e `s14e_800C6DB0`, e usa `(a | b)` — non `&&` — per decidere
+se continuare. Il compilatore originale emette `or s0,s0,v0; beqz s0,...`,
+quindi la C giusta e' `if ((a | b) == 0) return 0;`.
+
+Resta un solo `nop`: l'originale non riempie il delay slot della `bne v0,zero`
+dopo la prima chiamata, cc1psx ci mette la `jal` successiva. Semantica
+identica, NOPDIFF.
+
+### Stato
+
+`DIFF=3  MATCH=49  NOPDIFF=11  TODO=684`. 49/747 = 6.6%.
+
+Mi fermo qui: sono le 16:00 CET del 13/11.
