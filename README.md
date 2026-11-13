@@ -7,13 +7,13 @@ Goal: decompile the remaining overlay functions from `FoxdieTeam/mgs_reversing` 
 
 | Metric | Count | Description |
 |---|---|---|
-| **MATCH** | **42** | Decompiled and verified exact with `cc1psx` (instruction-level) |
-| NOPDIFF | 6 | Decompiled, but original had `nop` in delay slots (MATCH impossible) |
+| **MATCH** | **46** | Decompiled and verified exact with `cc1psx` (instruction-level) |
+| NOPDIFF | 8 | Decompiled, but original had `nop` in delay slots (MATCH impossible) |
 | DIFF | 2 | `s11g_11g_demo_800CB878` (not equivalent) + `s14e_800C6ADC` (NOP in delay slot) |
-| TODO | 698 | Still in assembly (`INCLUDE_ASM`) |
+| TODO | 691 | Still in assembly (`INCLUDE_ASM`) |
 | **Total** | **747** | Functions in the dump |
 
-Progress: **42/747 (5.6%)** decompiled with exact MATCH.
+Progress: **46/747 (6.2%)** decompiled with exact MATCH.
 
 ## Methodology
 
@@ -42,6 +42,7 @@ Progress: **42/747 (5.6%)** decompiled with exact MATCH.
 | `audit.py` | Runs emulator on all already-decompiled C functions. |
 | `match.sh` | Installs candidate, builds, compares, restores. |
 | `trybody.py` / `variants.py` | Enumerate and measure plausible implementations. |
+| `mkelf.py` | Rebuilds an overlay dump into an ELF32 MIPS image for REA/Ghidra analysis. |
 
 ### Known `cmp_func.py` limitations (fixed)
 
@@ -88,6 +89,10 @@ work/
 | `s07b_800CB068` | s07b | 19 | NOPDIFF (message_len in delay slot). |
 | `s14e_800C6AC0` | s14e | — | `int m; m = work->target->damaged & TARGET_DOWN; return m != 0;` |
 | `rank_800D0A24/0A70/0ABC/0B08` | rank | 18 each | NOPDIFF (family, all EQUIV). |
+| `s07b_800C4FB8` | s07b | 21 | `DG_OBJ[4]` + `DG_MovePos` + `ReadRotMatrix` + `AN_SocomFlash`. |
+| `s07b_800C54C0` | s07b | 10 | Shadow enable/disable helper (`field_8C2`, `field_84C`). |
+| `s07b_800C54E8` | s07b | 11 | Undo of `800C54C0`, clears `field_8C2` and re-enables shadow bits. |
+| `s14e_800CA2E4` | s14e | 28 | Blood splash matrix on `DG_OBJ[idx]` (twin of `s07b_800C4F50`). |
 
 ## Blocked Functions (examples)
 
@@ -108,7 +113,7 @@ cc1psx always fills delay slots, so these can never be exact MATCH.
 
 ## Work Log
 
-Full detailed log in `WORKLOG.md` (1660+ lines, last entry 27/10 11:30 CET).
+Full detailed log in `WORKLOG.md` (1900+ lines, last entry 13/11 12:00 CET).
 
 ## Build
 

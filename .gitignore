@@ -17,3 +17,7 @@ orig_*.s
 mgs_reversing/
 extracted/
 graphify-out/cache/
+
+# REA / Ghidra working images
+elf/
+cand_*.c

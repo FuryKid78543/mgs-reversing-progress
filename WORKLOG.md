@@ -1813,3 +1813,107 @@ differisce (19 vs 22) e l'allocazione dei registri e' diversa. Revertito.
 `DIFF=2  MATCH=42  NOPDIFF=6  TODO=697`. Invariato.
 
 Mi fermo qui: sono le 15:00 CET del 29/10.
+
+---
+
+## 29/10, 16:00 CET — esaurite le candidate senza movstr/callee ignoti
+
+Ho provato `rank_800CF2F0` (14 istruzioni). La logica era giusta ma il
+compilatore originale generava un `andi a3, a2, 0xffff` ridondante (a2 e'
+gia' u16) che cc1psx ottimizza via. MATCH impossibile.
+
+### Stato
+
+`DIFF=2  MATCH=42  NOPDIFF=6  TODO=697`. Invariato.
+
+Ho esaurito tutte le candidate con 0 slot vuoti, 0 store in slot, callee
+noti, e senza movstr. Le rimanenti (s07b_800C4FB8, s07b_800C96B8,
+s14e_800C82D0, s14e_800CA2E4, s14e_800CA49C, s14e_800CCF84,
+s08b_bunsin2_800CE0A4, s08b_bunsin2_800CE180, s08b_bunsin2_800CE2E8,
+s08b_bunsin2_800CE8A0, s08b_bunsin2_800CF150, s15c_valcan_800D8ECC,
+s19b_jeep_gls_800CEB2C, brf_800DA4E8, brf_800DCB44, rank_800D2644)
+hanno almeno uno di: movstr, callee ignoto, slot vuoto, store in slot,
+allocazione registri diversa.
+
+Mi fermo qui: sono le 16:00 CET del 29/10.
+
+---
+
+## 29/10, 17:00 CET — esaurite le candidate semplici (2)
+
+Ho provato `s07b_800CC89C` (14 istruzioni): semplice wrapper di
+`GCL_ExecProc`, ma ha `nop` nel delay slot del `jr` → MATCH impossibile.
+Revertito.
+
+### Stato
+
+`DIFF=2  MATCH=42  NOPDIFF=6  TODO=697`. Invariato.
+
+Mi fermo qui: sono le 17:00 CET del 29/10.
+
+---
+
+## 29/10, 18:00 CET — esaurite le candidate senza movstr/callee ignoti (2)
+
+Ho provato `d18a_snake18_800CECE0` (19 istruzioni). La logica era giusta
+ma cc1psx usa `li` (lui+ori) invece di `lui`+`addiu` per le costanti,
+generando split diversi. Revertito.
+
+### Stato
+
+`DIFF=2  MATCH=42  NOPDIFF=6  TODO=697`. Invariato.
+
+Mi fermo qui: sono le 18:00 CET del 29/10.
+
+---
+
+## 13/11, 12:00 CET — REA apre gli overlay: 4 MATCH, 2 NOPDIFF
+
+Ho ripreso il lavoro con REA (reverse-engineering MCP) invece di leggere a
+mano i dump. Per poterlo usare ho scritto `mkelf.py`: ricompone i `dw` di un
+overlay in un ELF32 MIPS32r2 LE (`elf/<overlay>.elf`) con `.text` agli
+indirizzi originali, tabella `.symtab` dei simboli `xdef` e `.MIPS.abiflags`.
+Ghidra lo analizza e il decompilatore restituisce pseudocodice C utile.
+
+### Callee ignoti identificati dal contesto
+
+- `0x80092DD8` = `ReadRotMatrix` (libgte): chiamato con un solo `MATRIX *`
+  subito dopo `DG_SetPos`/`DG_MovePos`.
+- `0x80093798` = `RotMatrix` (libgte): `(SVECTOR *rot, MATRIX *m)`, seguito
+  dal patch di `m->t[0..2]`.
+- `0x80092708` = `SquareRoot0` (libgte): riceve `vx*vx + vz*vz`.
+- `0x800E4618` (s07b) = `NewSepia` (`s07b_800C4A18`), confermato dal
+  `NEWCHARA` in `source/stage/s07b.c` (`DEMO_MONOTONE`).
+
+Questi erano il vero blocco di quasi tutte le candidate "callee ignoto":
+non servivano nuovi simboli di dati, solo il nome giusto.
+
+### MATCH
+
+- `s07b_800C4FB8` — `DG_OBJ[4]` + `DG_MovePos(indices)` + `ReadRotMatrix`
+  + `AN_SocomFlash`. 21 istruzioni esatte.
+- `s07b_800C54C0` — `field_8C2 = value; field_84C |= 2;
+  *(short *)enable_shadow &= 0xFF69`. 10 istruzioni esatte.
+- `s07b_800C54E8` — `field_8C2 = 0; field_84C &= ~2;
+  *(short *)enable_shadow |= 0x9E`. 11 istruzioni esatte.
+- `s14e_800CA2E4` — gemella di `800C4F50` per zako14: `DG_SetPos` su
+  `objs[idx]`, `DG_MovePos`/`DG_RotatePos` su due costanti, `ReadRotMatrix`,
+  `NewBlood(&m, count)`. 28 istruzioni esatte.
+
+### NOPDIFF
+
+- `s07b_800C4F50` — come sopra con `NewBlood(&m, 1)`; l'originale ha un
+  `nop` fra `lw ra` e `jr ra` (un solo registro salvato).
+- `s07b_800C5514` — decremento di `field_8C2` con chiamata a `800C54E8`
+  quando arriva a zero; tre `nop` nei delay slot.
+
+### Stato
+
+`DIFF=2  MATCH=46  NOPDIFF=8  TODO=691`. 46/747 = 6.2%.
+
+Le candidate restanti della lista `rank_match.py` sono ancora bloccate da
+allocazione registri o scheduling (es. `rank_800CC1E0` perde un solo `nop`
+di load-delay; `s08b_bunsin2_800CD770`/`800CD614` differiscono solo per lo
+split `lui/addiu` dell'indirizzo, non per la semantica).
+
+Mi fermo qui: sono le 12:00 CET del 13/11.
