@@ -1982,3 +1982,29 @@ Questo ha sbloccato il load globale non adiacente di `s14e_800CA49C`.
 `DIFF=2  MATCH=48  NOPDIFF=10  TODO=687`. 48/747 = 6.4%.
 
 Mi fermo qui: sono le 14:00 CET del 13/11.
+
+---
+
+## 13/11, 15:00 CET — s14e_800C82D0 MATCH, il tipo del puntatore conta
+
+`s14e_800C82D0` copia 8 byte da `data_800AB9F4 + 8` dentro `control.turn` e
+il compilatore PSX usa `lwl/lwr` + `swl/swr`. La chiave non era un cast a
+`char *`: dichiarando il globale come `SVECTOR *data_800AB9F4` e scrivendo
+`data_800AB9F4[1]`, cc1psx riproduce esattamente la coppia unaligned e il
+`DG_SetPos2(..., data_800AB9F4 + 1)`, con il `addiu a1,a1,8` nel delay slot
+della jal e senza istruzioni extra.
+
+Il resto della funzione e' il solito trio:
+
+    work->control.turn = data_800AB9F4[1];
+    DG_SetPos2((SVECTOR *)0x800ABA10, data_800AB9F4 + 1);
+    DG_PutVector((SVECTOR *)0x800C33C4, &v, 1);
+    GV_SubVec3(&v, &work->control.mov, &work->control.step);
+
+29 istruzioni, MATCH.
+
+### Stato
+
+`DIFF=2  MATCH=49  NOPDIFF=10  TODO=686`. 49/747 = 6.6%.
+
+Mi fermo qui: sono le 15:00 CET del 13/11.

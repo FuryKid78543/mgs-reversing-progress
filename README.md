@@ -7,13 +7,13 @@ Goal: decompile the remaining overlay functions from `FoxdieTeam/mgs_reversing` 
 
 | Metric | Count | Description |
 |---|---|---|
-| **MATCH** | **48** | Decompiled and verified exact with `cc1psx` (instruction-level) |
+| **MATCH** | **49** | Decompiled and verified exact with `cc1psx` (instruction-level) |
 | NOPDIFF | 10 | Decompiled, but original had `nop` in delay slots (MATCH impossible) |
 | DIFF | 2 | `s11g_11g_demo_800CB878` (not equivalent) + `s14e_800C6ADC` (NOP in delay slot) |
-| TODO | 687 | Still in assembly (`INCLUDE_ASM`) |
+| TODO | 686 | Still in assembly (`INCLUDE_ASM`) |
 | **Total** | **747** | Functions in the dump |
 
-Progress: **48/747 (6.4%)** decompiled with exact MATCH.
+Progress: **49/747 (6.6%)** decompiled with exact MATCH.
 
 ## Methodology
 
@@ -104,6 +104,7 @@ work/
 | `s14e_800CA2E4` | s14e | 28 | Blood splash matrix on `DG_OBJ[idx]` (twin of `s07b_800C4F50`). |
 | `s08b_bunsin2_800CD614` | s08b | 31 | Muzzle flash on `DG_OBJ[4]`, `GM_SeSet` + `AN_SocomFlash`, re-arms itself. |
 | `s08b_bunsin2_800CD770` | s08b | 38 | `RotMatrix` for the floor light prim, then copies the body translation. |
+| `s14e_800C82D0` | s14e | 29 | Copies `data_800AB9F4[1]` (SVECTOR) into `control.turn`, sets the position, then `GV_SubVec3` into `control.step`. |
 
 ## Blocked Functions (examples)
 
