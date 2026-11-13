@@ -2313,3 +2313,23 @@ di scheduling/codegen):
 Totale C: 85/747 = 11.4%.
 
 Mi fermo qui: sono le 23:00 CET del 13/11.
+
+---
+
+## 13/11, 23:30 CET — altri tre zako14
+
+- `s14e_800CB0BC` — frame update: se `act.motion1 < 0x31` chiama
+  `800CA96C`, `800CAEF4`, `800CADD0`, `800CAE24`, `800CDC08`, `800CA90C`;
+  poi sempre `800C96AC`. NOPDIFF (due nop nei delay slot).
+- `s14e_800C9A68` — override azione: vision.length 3000, motion2 0xE e
+  `GM_ConfigObjectOverride(..., 0x3FE)`, poi reset su `pad.press & 0x2000`.
+  DIFF: cc1psx anticipa il load della costante.
+- `s14e_800C9B00` — variante con vision.length 0, motion2 0x18, `GM_SeSet`
+  0x94 e reset se `body.time2 != 0` o `(pad.press & 0x40) == 0`. DIFF.
+
+### Stato
+
+`DIFF=13  MATCH=52  NOPDIFF=23  TODO=659`.
+Totale C: 88/747 = 11.8%.
+
+Mi fermo qui: sono le 23:30 CET del 13/11.
