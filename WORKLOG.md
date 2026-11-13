@@ -2144,3 +2144,18 @@ splittata dell'overlay, dichiarata con il nome-address e risolta da cmp_func.
 `DIFF=3  MATCH=51  NOPDIFF=14  TODO=679`. 51/747 = 6.8%.
 
 Mi fermo qui: sono le 18:00 CET del 13/11.
+
+---
+
+## 13/11, 18:30 CET — s14e_800CA90C NOPDIFF
+
+Loop sui callback `work->putchar[8]`: per ognuno, se non e' NULL, chiama
+`work->putchar[i](work)`. L'originale ha un `nop` nel delay slot della
+`beq` che salta la chiamata; cc1psx lo riempie con la `jalr`. Semantica
+identica, NOPDIFF.
+
+### Stato
+
+`DIFF=3  MATCH=51  NOPDIFF=15  TODO=678`. 51/747 = 6.8%.
+
+Mi fermo qui: sono le 18:30 CET del 13/11.

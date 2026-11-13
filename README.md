@@ -8,9 +8,9 @@ Goal: decompile the remaining overlay functions from `FoxdieTeam/mgs_reversing` 
 | Metric | Count | Description |
 |---|---|---|
 | **MATCH** | **51** | Decompiled and verified exact with `cc1psx` (instruction-level) |
-| NOPDIFF | 14 | Decompiled, but original had `nop` in delay slots (MATCH impossible) |
+| NOPDIFF | 15 | Decompiled, but original had `nop` in delay slots (MATCH impossible) |
 | DIFF | 3 | `s11g_11g_demo_800CB878`, `s14e_800C6ADC`, `s14e_800CCF84` (2-instruction schedule swap) |
-| TODO | 679 | Still in assembly (`INCLUDE_ASM`) |
+| TODO | 678 | Still in assembly (`INCLUDE_ASM`) |
 | **Total** | **747** | Functions in the dump |
 
 Progress: **51/747 (6.8%)** decompiled with exact MATCH.
