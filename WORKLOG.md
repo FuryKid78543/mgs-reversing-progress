@@ -2258,3 +2258,28 @@ sulla `jr`: NOPDIFF.
 `DIFF=4  MATCH=52  NOPDIFF=22  TODO=669`. 52/747 = 7.0%.
 
 Mi fermo qui: sono le 21:30 CET del 13/11.
+
+---
+
+## 13/11, 22:00 CET — s07b_800C46F0 DIFF
+
+Ricerca in una lista di `u_short` a +0x18 con conteggio a +0x16:
+
+    if (flag == 0) return 0;
+    n = *(short *)(data + 0x16);
+    p = (u_short *)(data + 0x18);
+    while (n > 0) {
+        if (*p == value) return 1;
+        p++;
+        n--;
+    }
+    return 0;
+
+C corretta; cc1psx mette `addiu a0,a0,2` nel delay slot della `bgtz` invece
+che in quello della `beq` come l'originale. DIFF.
+
+### Stato
+
+`DIFF=5  MATCH=52  NOPDIFF=22  TODO=668`. 52/747 = 7.0%.
+
+Mi fermo qui: sono le 22:00 CET del 13/11.
