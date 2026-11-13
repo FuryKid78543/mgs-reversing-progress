@@ -2200,3 +2200,20 @@ le ho lasciate INCLUDE_ASM invece di installare una C incompleta.
 `DIFF=4  MATCH=51  NOPDIFF=19  TODO=673`. 51/747 = 6.8%.
 
 Mi fermo qui: sono le 20:00 CET del 13/11.
+
+---
+
+## 13/11, 20:30 CET — altri due NOPDIFF zako14
+
+- `s14e_800C6DB0` — se `data_800AB3CC & 2`, imposta `work->action` a
+  `s14e_800C8748`, azzera `time` e i due turn, e chiama
+  `GM_ConfigMotionAdjust(&work->body, NULL)`. Un `nop` prima di `jr ra`.
+- `s14e_800CA354` — `DG_SetPos(objs[1])` + `DG_MovePos`/`DG_RotatePos` sulle
+  costanti 0x800C33E4/0x800C33EC, `ReadRotMatrix`, poi copia `m.t[0..2]` in
+  un SVECTOR e chiama `s14e_800CB658(&v)`. Un `nop` prima di `jr ra`.
+
+### Stato
+
+`DIFF=4  MATCH=51  NOPDIFF=21  TODO=671`. 51/747 = 6.8%.
+
+Mi fermo qui: sono le 20:30 CET del 13/11.
