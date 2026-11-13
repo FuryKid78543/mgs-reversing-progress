@@ -2117,3 +2117,30 @@ Entrambe hanno il solito pattern `&work->body.objs->objs[idx]` e le costanti
 `DIFF=3  MATCH=50  NOPDIFF=14  TODO=680`. 50/747 = 6.7%.
 
 Mi fermo qui: sono le 17:30 CET del 13/11.
+
+---
+
+## 13/11, 18:00 CET — s08b_bunsin2_800CD808 MATCH
+
+Contatore globale `s08b_dword_800C3438`: sui frame pari chiama
+`s08b_800C5D48(&objs[6])`, ogni 8 frame azzera il contatore e riarma
+l'attore con `s08b_bunsin2_800CD95C(work, s08b_bunsin2_800CD808)`.
+
+La C e' la traduzione diretta:
+
+    if ((s08b_dword_800C3438 & 1) == 0)
+        s08b_800C5D48(&work->body.objs->objs[6]);
+    if (s08b_dword_800C3438 > 7) {
+        s08b_dword_800C3438 = 0;
+        s08b_bunsin2_800CD95C(work, s08b_bunsin2_800CD808);
+    }
+    s08b_dword_800C3438++;
+
+28 istruzioni, MATCH. `s08b_800C5D48` e' un'altra funzione non ancora
+splittata dell'overlay, dichiarata con il nome-address e risolta da cmp_func.
+
+### Stato
+
+`DIFF=3  MATCH=51  NOPDIFF=14  TODO=679`. 51/747 = 6.8%.
+
+Mi fermo qui: sono le 18:00 CET del 13/11.
