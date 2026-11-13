@@ -2159,3 +2159,20 @@ identica, NOPDIFF.
 `DIFF=3  MATCH=51  NOPDIFF=15  TODO=678`. 51/747 = 6.8%.
 
 Mi fermo qui: sono le 18:30 CET del 13/11.
+
+---
+
+## 13/11, 19:00 CET — due utility zako14
+
+- `s14e_800CA718` — se `vision.pad == 2`, chiama
+  `s14e_800CC6F0((SVECTOR *)0x800ABA10, &work->control.mov, 0x8F)`.
+- `s14e_800C9FC0` — `DG_SetPos` su `objs[6]`, `DG_MovePos` sulla costante
+  0x800C33CC, `ReadRotMatrix`, `s14e_800C4580(&m)`.
+
+Entrambe hanno un solo `nop` prima di `jr ra`: NOPDIFF.
+
+### Stato
+
+`DIFF=3  MATCH=51  NOPDIFF=17  TODO=676`. 51/747 = 6.8%.
+
+Mi fermo qui: sono le 19:00 CET del 13/11.
