@@ -1780,3 +1780,36 @@ main exe). Entrambi dichiarati come `extern` con nomi sintetici
 `DIFF=2  MATCH=42  NOPDIFF=6  TODO=697`. Un commit nuovo (`fcf3213`).
 
 Mi fermo qui: sono le 10:00 CET del 29/10.
+
+---
+
+## 29/10, 11:00 CET — esaurite le candidate semplici
+
+Ho provato `s07b_800CC67C` (14 istruzioni), `s07b_800CC930` (16 istruzioni),
+`s08b_bunsin2_800D12A0` (19 istruzioni). Tutte hanno `nop` nei delay slot
+→ MATCH impossibile.
+
+### Stato
+
+`DIFF=2  MATCH=42  NOPDIFF=6  TODO=697`. Invariato.
+
+Ho esaurito tutte le candidate con 0 slot vuoti, 0 store in slot, e callee
+noti. Le rimanenti hanno almeno uno di: movstr, callee ignoto, slot vuoto,
+store in slot.
+
+Mi fermo qui: sono le 11:00 CET del 29/10.
+
+---
+
+## 29/10, 15:00 CET — tentativi su s07b_800C4FB8
+
+Ho provato `s07b_800C4FB8` (21 istruzioni). Chiama `0x80092DD8`
+(funzione ignota del main exe). Usando un nome sintetico (`func_80092DD8`)
+il compilatore genera `jal` (non `jalr`), ma il conteggio istruzioni
+differisce (19 vs 22) e l'allocazione dei registri e' diversa. Revertito.
+
+### Stato
+
+`DIFF=2  MATCH=42  NOPDIFF=6  TODO=697`. Invariato.
+
+Mi fermo qui: sono le 15:00 CET del 29/10.
