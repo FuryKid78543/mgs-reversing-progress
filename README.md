@@ -7,13 +7,13 @@ Goal: decompile the remaining overlay functions from `FoxdieTeam/mgs_reversing` 
 
 | Metric | Count | Description |
 |---|---|---|
-| **MATCH** | **49** | Decompiled and verified exact with `cc1psx` (instruction-level) |
+| **MATCH** | **50** | Decompiled and verified exact with `cc1psx` (instruction-level) |
 | NOPDIFF | 12 | Decompiled, but original had `nop` in delay slots (MATCH impossible) |
 | DIFF | 3 | `s11g_11g_demo_800CB878`, `s14e_800C6ADC`, `s14e_800CCF84` (2-instruction schedule swap) |
-| TODO | 683 | Still in assembly (`INCLUDE_ASM`) |
+| TODO | 682 | Still in assembly (`INCLUDE_ASM`) |
 | **Total** | **747** | Functions in the dump |
 
-Progress: **49/747 (6.6%)** decompiled with exact MATCH.
+Progress: **50/747 (6.7%)** decompiled with exact MATCH.
 
 ## Methodology
 
@@ -105,6 +105,7 @@ work/
 | `s08b_bunsin2_800CD614` | s08b | 31 | Muzzle flash on `DG_OBJ[4]`, `GM_SeSet` + `AN_SocomFlash`, re-arms itself. |
 | `s08b_bunsin2_800CD770` | s08b | 38 | `RotMatrix` for the floor light prim, then copies the body translation. |
 | `s14e_800C82D0` | s14e | 29 | Copies `data_800AB9F4[1]` (SVECTOR) into `control.turn`, sets the position, then `GV_SubVec3` into `control.step`. |
+| `s08b_bunsin2_800CE21C` | s08b | 44 | Direction table lookup by `GV_Clock % 4`, HZD address probe; keeps the table expression rematerialized instead of cached. |
 
 ## Blocked Functions (examples)
 

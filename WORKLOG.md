@@ -2072,3 +2072,30 @@ sono sfalsate), quindi la C usa `*(char *)((char *)work + 0xBA2)`.
 `DIFF=3  MATCH=49  NOPDIFF=12  TODO=683`. 49/747 = 6.6%.
 
 Mi fermo qui: sono le 16:30 CET del 13/11.
+
+---
+
+## 13/11, 17:00 CET — s08b_bunsin2_800CE21C MATCH
+
+Quarta variante della famiglia "scegli un vettore dalla tabella in base al
+clock e fai HZD_GetAddress". La chiave qui e' non tenere la base della
+tabella in una variabile:
+
+    d = GV_DiffVec3(&((SVECTOR *)&s08b_dword_800C34B0)[idx],
+                    (SVECTOR *)0x800ABA10);
+    ...
+    work->field_1968 = ((SVECTOR *)&s08b_dword_800C34B0)[idx];
+
+Se si introduce `SVECTOR *base = ...`, cc1psx la mette in un registro
+salvato (s2), allarga il frame e sbaglia la sequenza. Lasciando l'espressione
+completa il compilatore rimaterializza `lui/addiu` come l'originale: 44
+istruzioni, MATCH.
+
+La gemella `s08b_bunsin2_800CE0A4` (modulo per 6) resta fuori: cc1psx inserisce
+due `nop` dopo `mfhi` che l'originale non ha.
+
+### Stato
+
+`DIFF=3  MATCH=50  NOPDIFF=12  TODO=682`. 50/747 = 6.7%.
+
+Mi fermo qui: sono le 17:00 CET del 13/11.
