@@ -2283,3 +2283,33 @@ che in quello della `beq` come l'originale. DIFF.
 `DIFF=5  MATCH=52  NOPDIFF=22  TODO=668`. 52/747 = 7.0%.
 
 Mi fermo qui: sono le 22:00 CET del 13/11.
+
+---
+
+## 13/11, 23:00 CET — batch di decompilazioni (DIFF)
+
+Continuo a mano sui dump. Installate come DIFF (C completa, differenze solo
+di scheduling/codegen):
+
+- `s14e_800C712C` — `GM_SetPowerTarget` + `GM_MoveTarget` + `GM_PowerTarget`.
+  cc1psx anticipa il `li32` del sesto argomento.
+- `s14e_800C6E6C` — init di stato zako14 (mov 30000, vision, target/start,
+  current/last addr). Stesso numero di istruzioni, ordine dei load/store
+  diverso.
+- `s14e_800CAE24` — state machine del livello di allerta (switch su +0xB92,
+  clamp 0..0xFF a +0xB98). cc1psx riduce da 51 a 42 istruzioni.
+- `s14e_800CAA1C` — `HZD_GetAddress` due volte + `HZD_ZoneDistance` con cast
+  a `u_char`. Allocazione registri diversa.
+- `s14e_800C86D4` — cambio azione: `GM_ConfigObjectAction`,
+  `s14e_800C94A8`, `GM_ConfigMotionAdjust`. Scheduling dei load.
+- `s07b_800C473C` — check lista con `s07b_800C46F0`, maschera `0x4000`,
+  `field_850 |= 0x20000`. Scheduling e `srl/andi` vs `andi/sltu`.
+- `s07b_800C46F0` — ricerca in lista `u_short`; incremento del puntatore nel
+  delay slot sbagliato.
+
+### Stato
+
+`DIFF=11  MATCH=52  NOPDIFF=22  TODO=662`.
+Totale C: 85/747 = 11.4%.
+
+Mi fermo qui: sono le 23:00 CET del 13/11.
