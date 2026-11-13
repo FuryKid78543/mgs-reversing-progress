@@ -2053,3 +2053,22 @@ identica, NOPDIFF.
 `DIFF=3  MATCH=49  NOPDIFF=11  TODO=684`. 49/747 = 6.6%.
 
 Mi fermo qui: sono le 16:00 CET del 13/11.
+
+---
+
+## 13/11, 16:30 CET — due NOPDIFF zako14 in piu'
+
+- `s14e_800C6E08` — attivatore di stato (gia' descritto sopra, un `nop` nel
+  delay slot della `bne`).
+- `s14e_800CADD0` — azzera il byte 0xBA2, chiama `s14e_800CAA7C`, e se
+  `data_800DD6A4 != 1` chiama `s14e_800CA998`, `s14e_800CABFC` e
+  `s14e_800CAD24`. Un `nop` nel delay slot della `bne`.
+
+Nota: il campo a 0xBA2 non e' modellato in `zako.h` (le comment del VISION
+sono sfalsate), quindi la C usa `*(char *)((char *)work + 0xBA2)`.
+
+### Stato
+
+`DIFF=3  MATCH=49  NOPDIFF=12  TODO=683`. 49/747 = 6.6%.
+
+Mi fermo qui: sono le 16:30 CET del 13/11.
