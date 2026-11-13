@@ -2176,3 +2176,27 @@ Entrambe hanno un solo `nop` prima di `jr ra`: NOPDIFF.
 `DIFF=3  MATCH=51  NOPDIFF=17  TODO=676`. 51/747 = 6.8%.
 
 Mi fermo qui: sono le 19:00 CET del 13/11.
+
+---
+
+## 13/11, 20:00 CET — tre helper s07b
+
+- `s07b_800C4974` — clamp del turn rate fra -0x80 e 0x80 e store in
+  `control.turn.vz`. Il C e' corretto; cc1psx sposta la `move` nel delay slot
+  della `jal GV_DiffDirS` e omette il `nop`, quindi DIFF.
+- `s07b_800C49CC` — `GV_SendMessage` con address 0xC4C3, message[0] 0xD182
+  o 0x6B, message[1] 0x400. Gemella di `s07b_800CB068`; NOPDIFF per il `nop`
+  prima di `jr ra`.
+- `s07b_800C5554` — reset dello shadow: azzera +0x3E e +0x28, maschera +0x6
+  con 0xFF79, copia `data_800AB39C` in +0x2C. NOPDIFF per il delay slot vuoto
+  di `jr ra`.
+
+Nota: ho provato anche `s07b_800C9954` e `s07b_800C9B24`, ma chiamano
+`s07b_800C4B58` con argomenti che il dump non rende espliciti (usa a1 e a2);
+le ho lasciate INCLUDE_ASM invece di installare una C incompleta.
+
+### Stato
+
+`DIFF=4  MATCH=51  NOPDIFF=19  TODO=673`. 51/747 = 6.8%.
+
+Mi fermo qui: sono le 20:00 CET del 13/11.
