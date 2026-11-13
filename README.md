@@ -7,13 +7,13 @@ Goal: decompile the remaining overlay functions from `FoxdieTeam/mgs_reversing` 
 
 | Metric | Count | Description |
 |---|---|---|
-| **MATCH** | **51** | Decompiled and verified exact with `cc1psx` (instruction-level) |
+| **MATCH** | **52** | Decompiled and verified exact with `cc1psx` (instruction-level) |
 | NOPDIFF | 21 | Decompiled, but original had `nop` in delay slots (MATCH impossible) |
 | DIFF | 4 | `s11g_11g_demo_800CB878`, `s14e_800C6ADC`, `s14e_800CCF84`, `s07b_800C4974` (schedule swaps) |
-| TODO | 671 | Still in assembly (`INCLUDE_ASM`) |
+| TODO | 670 | Still in assembly (`INCLUDE_ASM`) |
 | **Total** | **747** | Functions in the dump |
 
-Progress: **51/747 (6.8%)** decompiled with exact MATCH.
+Progress: **52/747 (7.0%)** decompiled with exact MATCH.
 
 ## Methodology
 
@@ -107,6 +107,7 @@ work/
 | `s14e_800C82D0` | s14e | 29 | Copies `data_800AB9F4[1]` (SVECTOR) into `control.turn`, sets the position, then `GV_SubVec3` into `control.step`. |
 | `s08b_bunsin2_800CE21C` | s08b | 44 | Direction table lookup by `GV_Clock % 4`, HZD address probe; keeps the table expression rematerialized instead of cached. |
 | `s08b_bunsin2_800CD808` | s08b | 28 | Counter 0x800C3438: every other frame calls `s08b_800C5D48`, every 8th re-arms the actor. |
+| `s14e_800C6F94` | s14e | 33 | `ratan2` pitch to the player, `GV_NearExp8` smoothing, negative/positive `*3` or `*3/2` store. |
 
 ## Blocked Functions (examples)
 
@@ -133,7 +134,7 @@ family.
 
 ## Work Log
 
-Full detailed log in `WORKLOG.md` (1900+ lines, last entry 13/11 12:00 CET).
+Full detailed log in `WORKLOG.md` (2200+ lines, last entry 13/11 21:00 CET).
 
 ## Build
 

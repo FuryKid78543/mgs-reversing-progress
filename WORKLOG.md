@@ -2217,3 +2217,28 @@ Mi fermo qui: sono le 20:00 CET del 13/11.
 `DIFF=4  MATCH=51  NOPDIFF=21  TODO=671`. 51/747 = 6.8%.
 
 Mi fermo qui: sono le 20:30 CET del 13/11.
+
+---
+
+## 13/11, 21:00 CET — s14e_800C6F94 MATCH (senza REA)
+
+Continuo a mano sui dump (REA non e' piu' disponibile). `s14e_800C6F94`:
+
+    player = *data_800ABA20;
+    angle = ratan2(field_C2C,
+                   player->objs[6].world.t[1]
+                   - work->body.objs->objs[6].world.t[1]) & 0xFFF;
+    v = GV_NearExp8(*(short *)(work + 0x734), angle - 0x400);
+    *(short *)(work + 0x734) = v;
+    *(short *)(work + 0x754) = v;
+    if (v < 0) *(short *)(work + 0x75C) = v * 3;
+    else       *(short *)(work + 0x75C) = v * 3 / 2;
+
+Il trucco: tenere `v` come `int`, non `short`, altrimenti cc1psx inserisce
+`sll/sra 16` per risignare il valore. 33 istruzioni, MATCH.
+
+### Stato
+
+`DIFF=4  MATCH=52  NOPDIFF=21  TODO=670`. 52/747 = 7.0%.
+
+Mi fermo qui: sono le 21:00 CET del 13/11.
