@@ -8,12 +8,12 @@ Goal: decompile the remaining overlay functions from `FoxdieTeam/mgs_reversing` 
 | Metric | Count | Description |
 |---|---|---|
 | **MATCH** | **52** | Decompiled and verified exact with `cc1psx` (instruction-level) |
-| NOPDIFF | 22 | Decompiled, but original had `nop` in delay slots (MATCH impossible) |
-| DIFF | 17 | Decompiled, schedule/codegen differences only (no semantic mismatch) |
-| TODO | 655 | Still in assembly (`INCLUDE_ASM`) |
+| NOPDIFF | 23 | Decompiled, but original had `nop` in delay slots (MATCH impossible) |
+| DIFF | 21 | Decompiled, schedule/codegen differences only (no semantic mismatch) |
+| TODO | 651 | Still in assembly (`INCLUDE_ASM`) |
 | **Total** | **747** | Functions in the dump |
 
-Progress: **52/747 (7.0%)** decompiled with exact MATCH; **92/747 (12.3%)** with a C implementation (MATCH + NOPDIFF + DIFF).
+Progress: **52/747 (7.0%)** decompiled with exact MATCH; **96/747 (12.9%)** with a C implementation (MATCH + NOPDIFF + DIFF).
 
 ## Methodology
 

@@ -2356,3 +2356,25 @@ e a volte omette un `nop` di load-delay. Logica verificata.
 Totale C: 92/747 = 12.3%.
 
 Mi fermo qui: sono le 23:59 CET del 13/11.
+
+---
+
+## 13/11, 23:59 CET — batch finale zako14
+
+- `s14e_800C77F8` — variant di `800C7F00` con motion2 0x23 e `data_800C3396`.
+  DIFF: cc1psx anticipa il load della costante.
+- `s14e_800C6E6C` — init di stato zako14: mov 30000, vision, target/start,
+  current/last addr, ecc. DIFF: scheduling dei load/store.
+- `s14e_800C473C` — check lista con `s07b_800C46F0`, maschera 0x4000,
+  `field_850 |= 0x20000`. DIFF: `srl/andi` vs `andi/sltu`.
+- `s14e_800C9A68`, `s14e_800C9B00`, `s14e_800C99D0`, `s14e_800C9C7C`,
+  `s14e_800C9BB4`, `s14e_800C9D20`, `s14e_800CAE24`, `s14e_800CAA1C`,
+  `s14e_800C86D4`, `s14e_800CA3B8`, `s14e_800C6F40`, `s14e_800C7F00`,
+  `s14e_800C712C`, `s07b_800C46F0` — tutte DIFF per scheduling/codegen.
+
+### Stato
+
+`DIFF=20  MATCH=52  NOPDIFF=23  TODO=655`.
+Totale C: 95/747 = 12.7%.
+
+Mi fermo qui: sono le 23:59 CET del 13/11.
