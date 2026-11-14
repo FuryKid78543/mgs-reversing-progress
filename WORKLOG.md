@@ -2464,3 +2464,22 @@ cc1psx schedula diversamente e ottimizza il test su `field_98`.
 Totale C: 101/747 = 13.5%.
 
 Mi fermo qui: sono le 23:59 CET del 13/11.
+
+---
+
+## 13/11, 23:59 CET — s14e_800C7888 DIFF
+
+`*(u_short *)work->target |= 0x9F`; se arg==0: motion2=0x10,
+`GM_ConfigObjectAction(&work->body, data_800C3370, 0, 4)`. Poi `s14e_800C6E08`;
+se ritorna 0 e `*(short *)(work+0xB6) == 0` e `(pad.press & 4) == 0`, reset
+completo (pad.time=0, motion2=0, `GM_ConfigObjectOverride`, action2/time2=0,
+turn.vz/vx=0).
+
+cc1psx usa un frame piu' piccolo e rimaterializza gli offset; DIFF.
+
+### Stato
+
+`DIFF=26  MATCH=52  NOPDIFF=24  TODO=645`.
+Totale C: 103/747 = 13.8%.
+
+Mi fermo qui: sono le 23:59 CET del 13/11.
