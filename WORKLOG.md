@@ -2429,3 +2429,21 @@ commitato.
 Totale C: 99/747 = 13.2%.
 
 Mi fermo qui: sono le 01:00 CET del 14/11.
+
+---
+
+## 13/11, 23:59 CET — s14e_800C6A34 DIFF
+
+`work->target->field_6 & 2` → imposta `work->action = s14e_800C8350`,
+azzera `time`, `turn.vz`, `turn.vx`, chiama `GM_ConfigMotionAdjust`, azzera
+`target->field_6`, ritorna 1. Altrimenti ritorna 0.
+
+cc1psx elimina il check dead `lh v1, 0x3E` (entrambi i rami portano allo
+stesso valore) e schedula diversamente i load. DIFF.
+
+### Stato
+
+`DIFF=24  MATCH=52  NOPDIFF=24  TODO=647`.
+Totale C: 100/747 = 13.4%.
+
+Mi fermo qui: sono le 23:59 CET del 13/11.
