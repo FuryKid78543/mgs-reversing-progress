@@ -1,7 +1,7 @@
 # Worklog — decompilazione overlay `mgs_reversing`
 
-> **Stato attuale:** 177/747 funzioni in C (23,7%) · 52 MATCH verificati ·
-> 570 ancora in assembly. Dettaglio in [`README.md`](README.md).
+> **Stato attuale:** 191/747 funzioni in C (25,6%) · 52 MATCH verificati ·
+> 556 ancora in assembly. Dettaglio in [`README.md`](README.md).
 > Dopo il merge upstream dell'8 novembre, la base è `FoxdieTeam/master`.
 
 **Avvio 1: 2026-10-14 22:03:53 CEST** — struct + overlay, concluso ~22:45.

@@ -1,6 +1,6 @@
 # 🎮 MGS Reversing — Decompilation Progress
 
-[![Decompiled](https://img.shields.io/badge/decompiled-177%2F747-2ea44f?style=flat-square)](docs/progress.svg)
+[![Decompiled](https://img.shields.io/badge/decompiled-191%2F747-2ea44f?style=flat-square)](docs/progress.svg)
 [![MATCH](https://img.shields.io/badge/MATCH-52-1f6feb?style=flat-square)](#-decompiled-functions-match)
 [![Platform](https://img.shields.io/badge/platform-PSX-e34c26?style=flat-square)](#)
 [![Compiler](https://img.shields.io/badge/compiler-cc1psx%20%2F%20PSYQ%204.4-8957e5?style=flat-square)](#)
@@ -20,18 +20,18 @@
 
 ## 📊 Progress
 
-<img src="docs/progress.svg" alt="Progress: 177 of 747 functions in C (23.7%), 52 exact matches" width="820">
+<img src="docs/progress.svg" alt="Progress: 191 of 747 functions in C (25.6%), 52 exact matches" width="820">
 
 | Status | Count | Description |
 |:---|---:|:---|
 | ✅ **MATCH** | 52+ | Exact instruction-level match with `cc1psx` (my verified) |
 | ⚠️ **NOPDIFF** | 24 | Decompiled, but original had `nop` in delay slots (MATCH impossible) |
 | 🔶 **DIFF** | 34 | Decompiled, schedule/codegen differences only (semantically equivalent) |
-| 📝 **C total** | **177** | Functions with a C implementation (incl. upstream merge) |
-| 🔧 **TODO** | **570** | Still in assembly (`#pragma INCLUDE_ASM`) |
+| 📝 **C total** | **191** | Functions with a C implementation (incl. upstream merge) |
+| 🔧 **TODO** | **556** | Still in assembly (`#pragma INCLUDE_ASM`) |
 | **Total** | **747** | Functions in the dump |
 
-> After the **Nov 8 upstream merge** (FoxdieTeam `master`), 177 functions are in C.
+> After the **Nov 8 upstream merge** (FoxdieTeam `master`), 191 functions are in C.
 > My own verified contributions: **52 MATCH · 24 NOPDIFF · 34 DIFF**.
 
 ---
@@ -167,6 +167,19 @@ work/
 | `s08b_bunsin2_800D08C8` | s08b | ✅ | r0/r1/r2 probe logic |
 | `s08b_bunsin2_800D12A0` | s08b | ✅ | 301-frame counter |
 | `s08b_bunsin2_800D53E8` | s08b | ✅ | One-shot timer |
+| `s08b_bunsin2_800D0F88` | s08b | ✅ | Timer with `field_19D0` thresholds |
+| `s08b_bunsin2_800CAF6C` | s08b | ✅ | `action2` reset on `field_19B0 != 0x16` |
+| `s08b_bunsin2_800CB210` | s08b | ✅ | `field_1A00 = 1`, reset on `!= 0x1B` |
+| `s08b_bunsin2_800CE180` | s08b | ✅ | SVECTOR table + `HZD_GetAddress` |
+| `s08b_bunsin2_800CE800` | s08b | ✅ | Yaw → switch 0–3 |
+| `s08b_bunsin2_800CF660` | s08b | ✅ | Switch on `field_1A34` |
+| `s08b_bunsin2_800CCA4C` | s08b | ✅ | `GM_SeSetMode` at `arg == 0x3C` |
+| `s08b_bunsin2_800CAFF8` | s08b | ✅ | `target \|= 0x1F`, `!= 0x17` |
+| `s08b_bunsin2_800CB0A8` | s08b | ✅ | `target \|= 0x1F`, `!= 0x18` |
+| `s08b_bunsin2_800CB158` | s08b | ✅ | `s08b_800C9548`, `!= 0x1A` |
+| `s08b_bunsin2_800CB38C` | s08b | ✅ | `!= 0x1E`, `target \|= 0x1F` |
+| `s08b_bunsin2_800CB2AC` | s08b | ✅ | `GM_SeSetMode 0xB7`, `!= 0x1C` |
+| `s08b_bunsin2_800CB444` | s08b | ✅ | Variant with `s08b_800C9548`, `!= 0x1D` |
 | `brf_800DDC40` | brf | ✅ | Actor dispatch + table call |
 | `brf_800CEC68` / `brf_800CDF34` | brf | ✅ | switch on `field_ADA4` |
 | `s14e_800CA538` | s14e | ✅ | `GM_SeSet` 0xA0–0xA6 |
