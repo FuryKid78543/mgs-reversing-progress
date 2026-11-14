@@ -1,17 +1,26 @@
 # 🎮 MGS Reversing — Decompilation Progress
 
+[![Decompiled](https://img.shields.io/badge/decompiled-177%2F747-2ea44f?style=flat-square)](docs/progress.svg)
+[![MATCH](https://img.shields.io/badge/MATCH-52-1f6feb?style=flat-square)](#-decompiled-functions-match)
+[![Platform](https://img.shields.io/badge/platform-PSX-e34c26?style=flat-square)](#)
+[![Compiler](https://img.shields.io/badge/compiler-cc1psx%20%2F%20PSYQ%204.4-8957e5?style=flat-square)](#)
+[![Upstream](https://img.shields.io/badge/upstream-FoxdieTeam%2Fmgs__reversing-6e7781?style=flat-square)](https://github.com/FoxdieTeam/mgs_reversing)
+
 > Reverse-engineering **Metal Gear Solid (1998, PSX)**.  
 > Goal: decompile every remaining overlay function from
 > [`FoxdieTeam/mgs_reversing`](https://github.com/FoxdieTeam/mgs_reversing)
 > into C, verified instruction-by-instruction with `cc1psx` (PSYQ 4.4).
 
+**Quick links:** [Progress](#-progress) · [Methodology](#-methodology) ·
+[Tools](#-tools) · [Repository](#-repository-structure) ·
+[Decompiled](#-decompiled-functions-match) · [Build](#-build--verify) ·
+[Work log](WORKLOG.md)
+
 ---
 
 ## 📊 Progress
 
-```
-[███████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░]  23.7%
-```
+<img src="docs/progress.svg" alt="Progress: 177 of 747 functions in C (23.7%), 52 exact matches" width="820">
 
 | Status | Count | Description |
 |:---|---:|:---|
@@ -28,6 +37,19 @@
 ---
 
 ## 🧪 Methodology
+
+```mermaid
+flowchart LR
+    A[Original asm dump] --> B[disasm.py]
+    B --> C[Candidate C]
+    C --> D[cc1psx / PSYQ 4.4]
+    D --> E[cmp_func.py]
+    E -->|MATCH| F[Install pragma]
+    E -->|DIFF| G[mipsemu.py]
+    G -->|EQUIV| H[Manual review]
+    G -->|DIVERGE| C
+    F --> I[Commit]
+```
 
 1. **Compiler verification, not eyeballing** — every candidate is compiled with
    `cc1psx` and compared instruction-by-instruction against the original dump.
@@ -124,10 +146,30 @@ work/
 | `s08b_bunsin2_800CD808` | s08b | Counter 0x800C3438, re-arms the actor. |
 | `s14e_800C6F94` | s14e | `ratan2` pitch + `GV_NearExp8` smoothing. |
 | `s14e_800C6AC0` | s14e | `int m; m = work->target->damaged & TARGET_DOWN; return m != 0;` |
-| `rank_800D0A24/0A70/0ABC/0B08` | rank | NOPDIFF family (all EQUIV). |
-| `s07b_800CB068` | s07b | NOPDIFF (message_len in delay slot). |
 
 > Full list with instruction counts in [`WORKLOG.md`](WORKLOG.md).
+
+### ✨ Recent additions (this fork)
+
+| Function | Overlay | Status | Notes |
+|:---|:---|:---|:---|
+| `s07b_800C5490` | s07b | ✅ | Global -2 latch |
+| `s07b_800CC9E8` | s07b | ✅ | Shadow bit + `& 0xFF6B` |
+| `s07b_800CBDA0` | s07b | ✅ | `field_850 & 4`, pitch delta |
+| `s07b_800CC6CC` | s07b | ✅ | Six dwords to -1 |
+| `s07b_800CC89C` | s07b | ✅ | Message code 1 → `0x8001FF2C` |
+| `s07b_800CC138` | s07b | ✅ | Buffer + `0x80016504` |
+| `s07b_800CC67C` | s07b | ✅ | `"attack end\n"` printf |
+| `s07b_800CC8D4` | s07b | ✅ | `field_28 \|= / &= ~0x80` |
+| `s07b_800CC930` | s07b | ✅ | Two flags to 1 |
+| `s07b_800CCBB0` | s07b | ✅ | Clear + mask + SVECTOR copy |
+| `s07b_800D0A4C` | s07b | ✅ | Thin wrapper |
+| `s08b_bunsin2_800D08C8` | s08b | ✅ | r0/r1/r2 probe logic |
+| `s08b_bunsin2_800D12A0` | s08b | ✅ | 301-frame counter |
+| `s08b_bunsin2_800D53E8` | s08b | ✅ | One-shot timer |
+| `brf_800DDC40` | brf | ✅ | Actor dispatch + table call |
+| `brf_800CEC68` / `brf_800CDF34` | brf | ✅ | switch on `field_ADA4` |
+| `s14e_800CA538` | s14e | ✅ | `GM_SeSet` 0xA0–0xA6 |
 
 ---
 
@@ -145,7 +187,11 @@ work/
 
 10 functions whose original has a `nop` in a delay slot — cc1psx fills those
 slots, so the streams can never be identical, but the C is semantically
-equivalent (`s07b_800C4F50`, `s07b_800C5514`, `s14e_800C6028`, …).
+equivalent:
+
+`s07b_800C4F50` · `s07b_800C5514` · `s07b_800CB068` · `s14e_800C6028` ·
+`s14e_800C6E08` · `s14e_800CA49C` · `s14e_800CADD0` · `s14e_800CA90C` ·
+`s14e_800CA998` · `rank_800D0A24/0A70/0ABC/0B08` (family)
 
 ---
 
@@ -170,9 +216,21 @@ python mipsemu.py --selftest
 
 ## 📜 Work Log
 
-Full detailed log in [`WORKLOG.md`](WORKLOG.md).
+Full detailed log in [`WORKLOG.md`](WORKLOG.md) (67 timestamped sessions,
+navigable index at the top).
 
-## 🔗 Upstream
+## 🔗 Upstream & Credits
 
-Base: [`FoxdieTeam/mgs_reversing`](https://github.com/FoxdieTeam/mgs_reversing)  
-Progress tracker: [`FuryKid78543/mgs-reversing-progress`](https://github.com/FuryKid78543/mgs-reversing-progress)
+| | |
+|:---|:---|
+| **Base project** | [`FoxdieTeam/mgs_reversing`](https://github.com/FoxdieTeam/mgs_reversing) |
+| **This fork / tracker** | [`FuryKid78543/mgs-reversing-progress`](https://github.com/FuryKid78543/mgs-reversing-progress) |
+| **Compiler** | `cc1psx` from PSYQ 4.4 |
+| **Special thanks** | FoxdieTeam, millerkazuhira, GirianSeed, nicoSWD and all upstream contributors |
+
+---
+
+<div align="center">
+<sub>Metal Gear Solid © Konami. This project is a non-commercial reverse-engineering
+effort for preservation and research purposes.</sub>
+</div>

@@ -1,5 +1,9 @@
 # Worklog — decompilazione overlay `mgs_reversing`
 
+> **Stato attuale:** 177/747 funzioni in C (23,7%) · 52 MATCH verificati ·
+> 570 ancora in assembly. Dettaglio in [`README.md`](README.md).
+> Dopo il merge upstream dell'8 novembre, la base è `FoxdieTeam/master`.
+
 **Avvio 1: 2026-10-14 22:03:53 CEST** — struct + overlay, concluso ~22:45.
 **Avvio 2: 2026-10-15** — ripresa dopo un riavvio del server, obiettivo
 `aspsx`, poi overlay. **Arresto: 15/10 00:32 CEST.**
@@ -22,6 +26,8 @@ Direttive dell'utente:
 
 ## 📑 Indice
 
+**Sessione iniziale — 14/15 ottobre**
+
 - [22:03 — Apertura, stato ripreso](#2203--apertura-stato-ripreso)
 - [~22:08 — Lo strumento funziona, e zako14 è rotta da 0xB82 in giù](#2208--lo-strumento-funziona-e-zako14-è-rotta-da-0xb82-in-giù)
 - [~22:14 — Esteso a tutte le struct dell'albero: erano sane tranne zako14](#2214--esteso-a-tutte-le-struct-dellalbero-erano-sane-tranne-zako14)
@@ -37,12 +43,18 @@ Direttive dell'utente:
 - [~22:38 — Il riavvio ha interrotto `fix_all_structs.py` a metà](#2238--il-riavvio-ha-interrotto-fix_all_structspy-a-metà)
 - [~22:45 — Secondo avvio: `aspsx`, il compito dell'utente](#2245--secondo-avvio-aspsx-il-compito-dellutente)
 - [Terzo avvio — due problemi di filesystem, non di reverse engineering](#terzo-avvio--due-problemi-di-filesystem-non-di-reverse-engineering)
+
+**15–16 ottobre**
+
 - [15/10 20:52 CEST - emulatore MIPS differenziale: `mipsemu.py` operativo](#1510-2052-cest---emulatore-mips-differenziale-mipsemupy-operativo)
 - [15/10 22:36 CEST - tre nuove funzioni, e un bug dell'emulatore che](#1510-2236-cest---tre-nuove-funzioni-e-un-bug-dellemulatore-che)
 - [16/10 10:02 CEST - MATCH 31 -> 32, e due bug gravi dell'emulatore sui](#1610-1002-cest---match-31---32-e-due-bug-gravi-dellemulatore-sui)
 - [16/10 10:30 CEST - il backlog era dieci volte piu` grande di quanto](#1610-1030-cest---il-backlog-era-dieci-volte-piu-grande-di-quanto)
 - [16/10 11:53 CEST - i globali "mancanti" esistono: sono viste per-overlay](#1610-1153-cest---i-globali-mancanti-esistono-sono-viste-per-overlay)
 - [16/10 12:2x CEST - tre funzioni verificate, nessun nuovo MATCH](#1610-122x-cest---tre-funzioni-verificate-nessun-nuovo-match)
+
+**23–29 ottobre**
+
 - [23/10, 09:38 CEST — la regola delle macro, e un falso MATCH](#2310-0938-cest--la-regola-delle-macro-e-un-falso-match)
 - [23/10, 09:52 CEST — un MATCH in piu', e due trappole degli strumenti](#2310-0952-cest--un-match-in-piu-e-due-trappole-degli-strumenti)
 - [23/10, 10:23 CEST — il filtro che mancava: `ready.py`](#2310-1023-cest--il-filtro-che-mancava-readypy)
@@ -62,6 +74,9 @@ Direttive dell'utente:
 - [29/10, 16:00 CET — esaurite le candidate senza movstr/callee ignoti](#2910-1600-cet--esaurite-le-candidate-senza-movstrcallee-ignoti)
 - [29/10, 17:00 CET — esaurite le candidate semplici (2)](#2910-1700-cet--esaurite-le-candidate-semplici-2)
 - [29/10, 18:00 CET — esaurite le candidate senza movstr/callee ignoti (2)](#2910-1800-cet--esaurite-le-candidate-senza-movstrcallee-ignoti-2)
+
+**13–14 novembre**
+
 - [13/11, 12:00 CET — REA apre gli overlay: 4 MATCH, 2 NOPDIFF](#1311-1200-cet--rea-apre-gli-overlay-4-match-2-nopdiff)
 - [13/11, 13:00 CET — cmp_func normalizza lui+addiu con dest diverso e il delay di jal](#1311-1300-cet--cmp_func-normalizza-luiaddiu-con-dest-diverso-e-il-delay-di-jal)
 - [13/11, 14:00 CET — fold non adiacenti, e due funzioni zako14](#1311-1400-cet--fold-non-adiacenti-e-due-funzioni-zako14)
@@ -89,29 +104,6 @@ Direttive dell'utente:
 - [13/11, 23:59 CET — s14e_800C6A34 DIFF](#1311-2359-cet--s14e_800c6a34-diff)
 - [13/11, 23:59 CET — s14e_800C6D20 DIFF](#1311-2359-cet--s14e_800c6d20-diff)
 - [13/11, 23:59 CET — s14e_800C7888 DIFF](#1311-2359-cet--s14e_800c7888-diff)
-
-
-## 22:03 — Apertura, stato ripreso
-
-Riprendo da `NOTES.md`. Stato al momento della ripresa: 7 funzioni con match
-esatto, `aspsx`/`asmpsx` rotti sotto wibo (impediscono il link e quindi la
-verifica degli hash di overlay), `cc1psx` funzionante.
-
-La priorità che l'utente ha fissato è sistemare le struct. Il caso concreto
-scoperto prima della pausa: in `animal/zako14/zako.h` il commento dice
-`vision` a `0xB94` ma `cc1psx` genera `vision.length` a `0xB90`, mentre
-`s14e_800CA96C` legge `0xB8C`/`0xB8E`. Inoltre i commenti di `PARAM` si
-contraddicono (`/* 0xB82 */ short unknown;` e `/* 0xB82 */ short damage;`).
-
-Prima di correggere a mano devo poter **misurare** gli offset reali. Il
-metodo: generare una funzione che restituisce l'indirizzo di un campo e leggere
-l'`addiu` che il compilatore emette. È il ciclo che ho già usato con successo
-nel probe `probe_len` / `probe_rp`.
-
-**Piano**: costruire `struct_probe.py`, che legge una struct, genera i probe per
-ogni campo, compila e confronta l'offset emesso con il commento `/* 0xNNN */`.
-Questo dà due cose insieme: uno strumento riutilizzabile per tutte le struct del
-repo, e l'elenco esatto delle struct rotte da cui partire.
 
 ---
 
