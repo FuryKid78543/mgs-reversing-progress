@@ -2428,7 +2428,7 @@ commitato.
 `DIFF=23  MATCH=52  NOPDIFF=24  TODO=648`. 52/747 = 7.0%.
 Totale C: 99/747 = 13.2%.
 
-Mi fermo qui: sono le 01:00 CET del 14/11.
+Mi fermo qui: sono le 23:59 CET del 13/11.
 
 ---
 
@@ -2445,5 +2445,22 @@ stesso valore) e schedula diversamente i load. DIFF.
 
 `DIFF=24  MATCH=52  NOPDIFF=24  TODO=647`.
 Totale C: 100/747 = 13.4%.
+
+Mi fermo qui: sono le 23:59 CET del 13/11.
+
+---
+
+## 13/11, 23:59 CET — s14e_800C6D20 DIFF
+
+`if (work->field_98 == 0) return 0;` poi `*(short *)work->target->field_6 = 0`,
+`act.motion2 = 0x27`, `GM_ConfigObjectAction(&work->body, data_800C339E, 0, 4)`,
+`action = s14e_800C924C`, `time = 0`, `turn.vz = 0`,
+`GM_ConfigMotionAdjust(&work->body, NULL)`, `turn.vx = 0`, ritorna 1.
+cc1psx schedula diversamente e ottimizza il test su `field_98`.
+
+### Stato
+
+`DIFF=25  MATCH=52  NOPDIFF=24  TODO=646`.
+Totale C: 101/747 = 13.5%.
 
 Mi fermo qui: sono le 23:59 CET del 13/11.
