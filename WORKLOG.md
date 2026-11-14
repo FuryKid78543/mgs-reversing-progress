@@ -2410,3 +2410,22 @@ NOPDIFF.
 Totale C: 99/747 = 13.2%.
 
 Mi fermo qui: sono le 23:59 CET del 13/11.
+
+---
+
+## 14/11, 01:00 CET — rebuild s07b risolve gli STALE
+
+`checkall` segnalava 9 funzioni s07b come STALE (non compilate e non pragma).
+La causa era lo stato degli obj: ricostruendo `psyco.asm` e `meryl07b.asm` le
+funzioni ricompaiono. Nessuna regressione.
+
+Stato reale: `DIFF=23  MATCH=52  NOPDIFF=24  TODO=648` (totale C 99/747).
+Ho anche installato `s14e_800C7AEC` (DIFF, era rimasta nel working tree) e
+commitato.
+
+### Stato
+
+`DIFF=23  MATCH=52  NOPDIFF=24  TODO=648`. 52/747 = 7.0%.
+Totale C: 99/747 = 13.2%.
+
+Mi fermo qui: sono le 01:00 CET del 14/11.
